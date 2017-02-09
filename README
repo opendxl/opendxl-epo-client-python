@@ -1,0 +1,36 @@
+McAfee ePolicy Orchestrator (ePO) DXL Python Client Library
+===========================================================
+
+Overview
+--------
+
+The `McAfee ePolicy Orchestrator <https://www.mcafee.com/us/products/epolicy-orchestrator.aspx>`_ (ePO) DXL Python
+client library provides a high level wrapper for invoking ePO remote commands via the
+`Data Exchange Layer <http://www.mcafee.com/us/solutions/data-exchange-layer.aspx>`_ (DXL) fabric.
+
+The purpose of this library is to allow users to invoke ePO remote commands without having to focus
+on lower-level details such as ePO-specific DXL topics and message formats.
+
+Documentation
+-------------
+
+See the `GitHub Wiki <https://github.com/opendxl/opendxl-epo-client-python/wiki>`_ for an overview of the
+McAfee ePolicy Orchestrator (ePO) DXL Python Client Library and examples.
+
+See the `McAfee ePolicy Orchestrator (ePO) DXL Python Client Library Documentation <https://opendxl.github.io/opendxl-epo-client-python/pydoc>`_ for
+installation instructions, API documentation, and examples.
+
+Bugs and Feedback
+-----------------
+
+For bugs, questions and discussions please use the `GitHub Issues <https://github.com/opendxl/opendxl-epo-client-python/issues>`_.
+
+LICENSE
+-------
+
+Copyright 2017 McAfee, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+License. You may obtain a copy of the License at
+
+`<http://www.apache.org/licenses/LICENSE-2.0>`_
