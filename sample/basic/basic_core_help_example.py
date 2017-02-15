@@ -1,14 +1,17 @@
-# This sample invokes and displays the results of the "core help" command via
-# the ePO DXL service. This displays the remote commands that are exposed by
-# the ePO server.
+# This sample invokes and displays the results of the "core help" remote
+# command via the ePO DXL service. The "core help" command lists the
+# remote commands that are exposed by the particular ePO server.
 #
 # NOTE: Prior to running this sample you must provide values for the following
 #       constants in this file:
 #
 #       EPO_UNIQUE_ID : The unique identifier used to identify the ePO server
 #                       on the DXL fabric.
+#
+#                       If only one ePO server is connected to the DXL fabric
+#                       this constant can be set to None (the client will
+#                       automatically determine the ePO's unique identifier).
 
-import json
 import os
 import sys
 

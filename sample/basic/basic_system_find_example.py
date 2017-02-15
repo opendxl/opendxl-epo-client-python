@@ -8,6 +8,10 @@
 #       EPO_UNIQUE_ID : The unique identifier used to identify the ePO server
 #                       on the DXL fabric.
 #
+#                       If only one ePO server is connected to the DXL fabric
+#                       this constant can be set to None (the client will
+#                       automatically determine the ePO's unique identifier).
+#
 #       SEARCH_TEXT   : The search text to use (system name, etc.)
 
 import json
@@ -33,8 +37,7 @@ config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
 EPO_UNIQUE_ID = None
 
 # The search text
-#SEARCH_TEXT = "<specify-find-search-text>"
-SEARCH_TEXT = "broker"
+SEARCH_TEXT = "<specify-find-search-text>"
 
 # Create the client
 with DxlClient(config) as client:
@@ -50,5 +53,8 @@ with DxlClient(config) as client:
                                  {"searchText": SEARCH_TEXT},
                                  output_format=OutputFormat.JSON)
 
+    # Load find result into dictionary
+    res_dict = json.loads(res, encoding='utf-8')
+
     # Display the results
-    print json.dumps(json.loads(res, encoding='utf-8'), sort_keys=True, indent=4, separators=(',', ': '))
+    print json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': '))

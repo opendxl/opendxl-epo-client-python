@@ -41,4 +41,7 @@ Basic
 .. toctree::
     :maxdepth: 1
 
+    basiccorehelpexample
+    basicsystemfindexample
+
 
