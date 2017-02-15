@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Basic Core Help Example &#8212; McAfee ePolicy Orchestrator (ePO) DXL Client 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="McAfee ePolicy Orchestrator (ePO) DXL Client 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Basic System Find Example" href="basicsystemfindexample.html" />
+    <link rel="prev" title="Samples Configuration" href="sampleconfig.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="basicsystemfindexample.html" title="Basic System Find Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sampleconfig.html" title="Samples Configuration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">McAfee ePolicy Orchestrator (ePO) DXL Client 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="basic-core-help-example">
+<h1>Basic Core Help Example<a class="headerlink" href="#basic-core-help-example" title="Permalink to this headline">¶</a></h1>
+<p>This sample invokes and displays the results of the &#8220;core help&#8221; remote command via the ePO DXL service.
+The &#8220;core help&#8221; command lists the remote commands that are exposed by a particular ePO server.</p>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The samples configuration step has been completed (see <a class="reference internal" href="sampleconfig.html"><span class="doc">Samples Configuration</span></a>)</li>
+<li>The ePO DXL service is running and available on the fabric (see <a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>)</li>
+<li>The client is authorized to invoke the ePO DXL Service (see <a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization">ePO DXL Service Client Authorization</a>)</li>
+</ul>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<p>Modify the example to include the <cite>unique identifier</cite> associated with the ePO to invoke the remote command on.</p>
+<p>For more information on the ePO unique identifier, refer to the following:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/configuration.html#dxl-service-configuration-file-dxleposervice-config">Configuration File for ePO DXL Python Service (uniqueId property)</a></li>
+<li>The <a class="reference internal" href="dxlepoclient.client.html#dxlepoclient.client.EpoClient.lookup_epo_unique_identifiers" title="dxlepoclient.client.EpoClient.lookup_epo_unique_identifiers"><code class="xref py py-func docutils literal"><span class="pre">dxlepoclient.client.EpoClient.lookup_epo_unique_identifiers()</span></code></a> method which will return a <code class="docutils literal"><span class="pre">set</span></code>
+containing the identifiers for all ePO servers that are currently connected to the fabric.</li>
+</ul>
+<p>For example:</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">EPO_UNIQUE_ID</span> <span class="o">=</span> <span class="s2">&quot;epo1&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>If only one ePO server is connected to the DXL fabric this constant can be set to <code class="docutils literal"><span class="pre">None</span></code> (the client will
+automatically determine the ePO&#8217;s unique identifier).</p>
+</div>
+<div class="section" id="running">
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<p>To run this sample execute the <code class="docutils literal"><span class="pre">sample/basic/basic_core_help_example.py</span></code> script as follows:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sample</span><span class="o">/</span><span class="n">basic</span><span class="o">/</span><span class="n">basic_core_help_example</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The output should appear similar to the following:</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createAgentDeploymentUrlCmd</span> <span class="n">deployPath</span> <span class="n">groupId</span> <span class="p">[</span><span class="n">edit</span><span class="p">]</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span>
+<span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="p">[</span><span class="n">urlName</span><span class="p">]</span> <span class="p">[</span><span class="n">agentVersionNumber</span><span class="p">]</span> <span class="p">[</span><span class="n">agentHotFix</span><span class="p">]</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">Agent</span>
+<span class="n">Deployment</span> <span class="n">URL</span> <span class="n">Command</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createCustomInstallPackageCmd</span> <span class="n">deployPath</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span> <span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="o">-</span>
+<span class="n">Create</span> <span class="n">Custom</span> <span class="n">Install</span> <span class="n">Package</span> <span class="n">Command</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createDefaultAgentDeploymentUrlCmd</span> <span class="n">tenantId</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">Default</span>
+<span class="n">Non</span><span class="o">-</span><span class="n">Editable</span> <span class="n">Agent</span> <span class="n">Deployment</span> <span class="n">URL</span> <span class="n">Command</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createTagGroup</span> <span class="n">parentTagGroupId</span> <span class="n">newTagGroupName</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">a</span> <span class="n">new</span>
+<span class="n">subgroup</span> <span class="n">under</span> <span class="n">an</span> <span class="n">existing</span> <span class="n">tag</span> <span class="n">group</span><span class="o">.</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">deleteTag</span> <span class="n">tagIds</span> <span class="p">[</span><span class="n">forceDelete</span><span class="p">]</span> <span class="o">-</span> <span class="n">Delete</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">tags</span><span class="o">.</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">deleteTagGroup</span> <span class="n">tagGroupIds</span> <span class="p">[</span><span class="n">deleteTags</span><span class="p">]</span> <span class="o">-</span> <span class="n">Delete</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">Tag</span>
+<span class="n">Groups</span><span class="o">.</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">listAllTagGroups</span> <span class="o">-</span> <span class="n">List</span> <span class="n">All</span> <span class="n">Tag</span> <span class="n">Groups</span> <span class="ow">in</span> <span class="n">Tag</span> <span class="n">Group</span> <span class="n">Tree</span>
+<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">moveTagsToTagGroup</span> <span class="n">tagIds</span> <span class="n">tagGroupId</span> <span class="o">-</span> <span class="n">Move</span> <span class="n">tags</span> <span class="n">to</span> <span class="n">an</span> <span class="n">existing</span> <span class="n">tag</span>
+<span class="n">group</span><span class="o">.</span>
+
+<span class="o">...</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Each remote command exposed by the particular ePO server is listed along with its associated parameters.</p>
+</div>
+<div class="section" id="details">
+<h2>Details<a class="headerlink" href="#details" title="Permalink to this headline">¶</a></h2>
+<p>The majority of the sample code is shown below:</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># The ePO unique identifier</span>
+<span class="n">EPO_UNIQUE_ID</span> <span class="o">=</span> <span class="bp">None</span>
+
+<span class="c1"># Create the client</span>
+<span class="k">with</span> <span class="n">DxlClient</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+
+    <span class="c1"># Connect to the fabric</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="c1"># Create the ePO client</span>
+    <span class="n">epo_client</span> <span class="o">=</span> <span class="n">EpoClient</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">EPO_UNIQUE_ID</span><span class="p">)</span>
+
+    <span class="c1"># Display the help</span>
+    <span class="k">print</span> <span class="n">epo_client</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Once a connection is established to the DXL fabric, a <a class="reference internal" href="dxlepoclient.client.html#dxlepoclient.client.EpoClient" title="dxlepoclient.client.EpoClient"><code class="xref py py-class docutils literal"><span class="pre">dxlepoclient.client.EpoClient</span></code></a> instance is created
+which will be used to invoke remote commands on the ePO server. The <cite>unique identifier</cite> of the ePO server
+to invoke remote commands on is specified as an argument to the client constructor. In this particular case, a
+value of <code class="docutils literal"><span class="pre">None</span></code> is specified which triggers the client to automatically determine the ePO server&#8217;s unique identifier.
+This will not work if multiple ePO servers are connected to the fabric (an exception will be raised).</p>
+<p>Next, the results of invoking the <a class="reference internal" href="dxlepoclient.client.html#dxlepoclient.client.EpoClient.help" title="dxlepoclient.client.EpoClient.help"><code class="xref py py-func docutils literal"><span class="pre">dxlepoclient.client.EpoClient.help()</span></code></a> method are displayed to the screen.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Basic Core Help Example</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#running">Running</a></li>
+<li><a class="reference internal" href="#details">Details</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sampleconfig.html"
+                        title="previous chapter">Samples Configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="basicsystemfindexample.html"
+                        title="next chapter">Basic System Find Example</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/basiccorehelpexample.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="basicsystemfindexample.html" title="Basic System Find Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sampleconfig.html" title="Samples Configuration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">McAfee ePolicy Orchestrator (ePO) DXL Client 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, McAfee Inc.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+    </div>
+  </body>
+</html>
