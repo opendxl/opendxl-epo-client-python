@@ -10,6 +10,11 @@ client library provides a high level wrapper for invoking ePO remote commands vi
 The purpose of this library is to allow users to invoke ePO remote commands without having to focus
 on lower-level details such as ePO-specific DXL topics and message formats.
 
+This client requires an ePO DXL service to be running and available on the DXL fabric. 
+
+A Python-based implementation of an ePO DXL service is available here:
+* [McAfee ePolicy Orchestrator (ePO) DXL Python Service](https://github.com/opendxl/opendxl-epo-service-python)
+
 ## Documentation
 
 See the [Wiki](https://github.com/opendxl/opendxl-epo-client-python/wiki) for an overview of the McAfee ePolicy Orchestrator (ePO) DXL Python Client Library and examples.
