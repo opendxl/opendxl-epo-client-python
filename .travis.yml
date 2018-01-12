@@ -15,7 +15,7 @@ before_install:
 
 # command to install dependencies
 install:
-  - pip install dxlclient
+  - pip install dxlclient dxlbootstrap
   - pip install .
 
 before_script:
