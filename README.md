@@ -1,5 +1,6 @@
 # McAfee ePolicy Orchestrator (ePO) DXL Python Client Library
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Latest PyPI Version](https://img.shields.io/pypi/v/dxlepoclient.svg)](https://pypi.python.org/pypi/dxlepoclient)
 [![Build Status](https://travis-ci.org/opendxl/opendxl-epo-client-python.png?branch=master)](https://travis-ci.org/opendxl/opendxl-epo-client-python)
 
 ## Overview
