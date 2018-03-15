@@ -14,6 +14,8 @@
 #
 #       SEARCH_TEXT   : The search text to use (system name, etc.)
 
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 import os
 import sys
@@ -57,4 +59,4 @@ with DxlClient(config) as client:
     res_dict = json.loads(res, encoding='utf-8')
 
     # Display the results
-    print json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': '))
+    print(json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': ')))

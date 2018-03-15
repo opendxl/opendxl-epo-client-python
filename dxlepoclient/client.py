@@ -3,6 +3,7 @@
 # Copyright (c) 2017 McAfee Inc. - All Rights Reserved.
 ################################################################################
 
+from __future__ import absolute_import
 import json
 import logging
 from dxlclient import Request, Message

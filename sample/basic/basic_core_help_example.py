@@ -12,6 +12,8 @@
 #                       this constant can be set to None (the client will
 #                       automatically determine the ePO's unique identifier).
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
 
@@ -43,4 +45,4 @@ with DxlClient(config) as client:
     epo_client = EpoClient(client, EPO_UNIQUE_ID)
 
     # Display the help
-    print epo_client.help()
+    print(epo_client.help())
