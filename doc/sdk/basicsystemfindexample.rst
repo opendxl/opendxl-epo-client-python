@@ -101,7 +101,7 @@ The majority of the sample code is shown below:
             res_dict = json.loads(res, encoding='utf-8')
 
             # Display the results
-            print json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': '))
+            print(json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 Once a connection is established to the DXL fabric, a :class:`dxlepoclient.client.EpoClient` instance is created
