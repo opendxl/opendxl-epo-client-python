@@ -4,9 +4,10 @@
 ################################################################################
 
 from __future__ import absolute_import
-import json
 import logging
 from dxlclient import Request, Message
+from dxlbootstrap.client import Client
+from dxlbootstrap.util import MessageUtils
 
 # Configure local logger
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class OutputFormat(object):
             raise Exception("Invalid output format: {0}".format(output_format))
 
 
-class EpoClient(object):
+class EpoClient(Client):
     """
     This client provides a high level wrapper for invoking ePO remote commands
     via the Data Exchange Layer (DXL) fabric.
@@ -67,13 +68,10 @@ class EpoClient(object):
     DXL_REQUEST_FORMAT = DXL_REQUEST_PREFIX + "{0}"
 
     # The default amount of time (in seconds) to wait for a response from the ePO DXL service
-    DEFAULT_RESPONSE_TIMEOUT = 30
+    DEFAULT_RESPONSE_TIMEOUT = Client._DEFAULT_RESPONSE_TIMEOUT
 
     # The minimum amount of time (in seconds) to wait for a response from the ePO DXL service
-    MIN_RESPONSE_TIMEOUT = 30
-
-    # Encoding used to encode/decode DXL payloads
-    _UTF_8 = "utf-8"
+    MIN_RESPONSE_TIMEOUT = Client._MIN_RESPONSE_TIMEOUT
 
     def __init__(self, dxl_client, epo_unique_id=None):
         """
@@ -104,8 +102,8 @@ class EpoClient(object):
         :param epo_unique_id: (optional) The unique identifier used to specify
             the ePO server that this client will communicate with.
         """
+        super(EpoClient, self).__init__(dxl_client)
         self._dxl_client = dxl_client
-        self._response_timeout = self.DEFAULT_RESPONSE_TIMEOUT
 
         if epo_unique_id is None:
             logger.debug("Attempting to find ePO service identifier...")
@@ -125,21 +123,6 @@ class EpoClient(object):
                         ", ".join(epo_ids)))
 
         self._epo_unique_id = epo_unique_id
-
-    @property
-    def response_timeout(self):
-        """
-        The maximum amount of time (in seconds) to wait for a response from the ePO service
-        """
-        return self._response_timeout
-
-    @response_timeout.setter
-    def response_timeout(self, response_timeout):
-        if response_timeout < self.MIN_RESPONSE_TIMEOUT:
-            raise Exception(
-                "Response timeout must be greater than or equal to " + str(
-                    self.MIN_RESPONSE_TIMEOUT))
-        self._response_timeout = response_timeout
 
     def run_command(self, command_name, params=None,
                     output_format=OutputFormat.JSON):
@@ -237,7 +220,7 @@ class EpoClient(object):
         return self._sync_request(
             self._dxl_client,
             Request(self.DXL_REQUEST_FORMAT.format(self._epo_unique_id)),
-            self._response_timeout,
+            self.response_timeout,
             payload_dict)
 
     @staticmethod
@@ -252,20 +235,18 @@ class EpoClient(object):
         :return: The result of the remote command execution (resulting payload)
         """
         # Set the payload
-        request.payload = json.dumps(payload_dict).encode(
-            encoding=EpoClient._UTF_8)
+        MessageUtils.dict_to_json_payload(request, payload_dict)
 
         # Display the request that is going to be sent
         logger.debug("Request:\n%s",
-                     json.dumps(payload_dict, sort_keys=True, indent=4,
-                                separators=(',', ': ')))
+                     MessageUtils.dict_to_json(payload_dict, pretty_print=True))
 
         # Send the request and wait for a response (synchronous)
         res = dxl_client.sync_request(request, timeout=response_timeout)
 
         # Return a dictionary corresponding to the response payload
         if res.message_type != Message.MESSAGE_TYPE_ERROR:
-            ret_val = res.payload.decode(encoding=EpoClient._UTF_8)
+            ret_val = MessageUtils.decode_payload(res)
             # Display the response
             logger.debug("Response:\n%s", ret_val)
             return ret_val
@@ -274,8 +255,8 @@ class EpoClient(object):
                 res.error_code) + ")")
 
     @staticmethod
-    def lookup_epo_unique_identifiers(dxl_client,
-                                      response_timeout=DEFAULT_RESPONSE_TIMEOUT):
+    def lookup_epo_unique_identifiers(
+            dxl_client, response_timeout=Client._DEFAULT_RESPONSE_TIMEOUT):
         """
         Returns a ``set`` containing the unique identifiers for the ePO servers that are currently
         exposed to the DXL fabric
@@ -290,7 +271,7 @@ class EpoClient(object):
             Request("/mcafee/service/dxl/svcregistry/query"),
             response_timeout,
             {"serviceType": EpoClient.DXL_SERVICE_TYPE})
-        res_dict = json.loads(res.rstrip("\0"))
+        res_dict = MessageUtils.json_payload_to_dict(res)
 
         ret_ids = set()
         if "services" in res_dict:

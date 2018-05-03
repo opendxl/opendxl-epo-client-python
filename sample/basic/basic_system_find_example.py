@@ -16,12 +16,12 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-import json
 import os
 import sys
 
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.client import DxlClient
+from dxlbootstrap.util import MessageUtils
 from dxlepoclient import EpoClient, OutputFormat
 
 # Import common logging and configuration
@@ -56,7 +56,7 @@ with DxlClient(config) as client:
                                  output_format=OutputFormat.JSON)
 
     # Load find result into dictionary
-    res_dict = json.loads(res, encoding='utf-8')
+    res_dict = MessageUtils.json_to_dict(res)
 
     # Display the results
-    print(json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': ')))
+    print(MessageUtils.dict_to_json(res_dict, pretty_print=True))

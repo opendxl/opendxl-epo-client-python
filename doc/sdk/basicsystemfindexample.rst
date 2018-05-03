@@ -98,10 +98,10 @@ The majority of the sample code is shown below:
                                          output_format=OutputFormat.JSON)
 
             # Load find result into dictionary
-            res_dict = json.loads(res, encoding='utf-8')
+            res_dict = MessageUtils.json_to_dict(res)
 
             # Display the results
-            print(json.dumps(res_dict, sort_keys=True, indent=4, separators=(',', ': ')))
+            print(MessageUtils.dict_to_json(res_dict, pretty_print=True))
 
 
 Once a connection is established to the DXL fabric, a :class:`dxlepoclient.client.EpoClient` instance is created
@@ -115,6 +115,3 @@ format of ``json`` and a ``searchText`` parameter that is specified with the val
 
 Finally, the JSON response text is loaded into a Python dictionary (``dict``), formatted,
 and displayed to the screen.
-
-
-
