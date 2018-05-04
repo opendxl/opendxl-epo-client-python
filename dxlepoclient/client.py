@@ -271,7 +271,7 @@ class EpoClient(Client):
             Request("/mcafee/service/dxl/svcregistry/query"),
             response_timeout,
             {"serviceType": EpoClient.DXL_SERVICE_TYPE})
-        res_dict = MessageUtils.json_payload_to_dict(res)
+        res_dict = MessageUtils.json_to_dict(res)
 
         ret_ids = set()
         if "services" in res_dict:
