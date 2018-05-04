@@ -84,7 +84,7 @@ The majority of the sample code is shown below:
             epo_client = EpoClient(client, EPO_UNIQUE_ID)
 
             # Display the help
-            print epo_client.help()
+            print(epo_client.help())
 
 
 Once a connection is established to the DXL fabric, a :class:`dxlepoclient.client.EpoClient` instance is created
@@ -94,6 +94,3 @@ value of ``None`` is specified which triggers the client to automatically determ
 This will not work if multiple ePO servers are connected to the fabric (an exception will be raised).
 
 Next, the results of invoking the :func:`dxlepoclient.client.EpoClient.help` method are displayed to the screen.
-
-
-
