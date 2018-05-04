@@ -1,0 +1,17 @@
+dxlepoclient package
+====================
+
+Submodules
+----------
+
+.. toctree::
+
+   dxlepoclient.client
+
+Module contents
+---------------
+
+.. automodule:: dxlepoclient
+    :members:
+    :undoc-members:
+    :show-inheritance:
