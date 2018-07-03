@@ -84,7 +84,10 @@ class TempSampleFile(object):
         return self._temp_file
 
     def __init__(self, sample_filename):
-        self._temp_file = NamedTemporaryFile(mode="w+", delete=False)
+        self._temp_file = NamedTemporaryFile(
+            mode="w+",
+            dir=os.path.dirname(sample_filename),
+            delete=False)
         self._temp_file.close()
         os.chmod(self._temp_file.name, 0o777)
         self.base_filename = sample_filename
@@ -118,9 +121,6 @@ class TestSamples(BaseClientTest):
 
     BASIC_FOLDER = SAMPLE_FOLDER + "/basic"
 
-    COMMON_LINE = "from common import *"
-    COMMON_REPLACEMENT_LINE = "from sample.common import *"
-
     def test_corehelp_example(self):
         # Modify sample file to include necessary sample data
         sample_filename = self.BASIC_FOLDER + "/basic_core_help_example.py"
@@ -132,8 +132,6 @@ class TestSamples(BaseClientTest):
                            + str(DEFAULT_EPO_SERVER_ID) \
                            + "\"\n"
         temp_sample_file.write_file_line(target_line, replacement_line)
-
-        temp_sample_file.write_file_line(self.COMMON_LINE, self.COMMON_REPLACEMENT_LINE)
 
         with BaseClientTest.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
@@ -166,8 +164,6 @@ class TestSamples(BaseClientTest):
         target_line = "SEARCH_TEXT = "
         replacement_line = target_line + "\"" + SYSTEM_FIND_OSTYPE_LINUX + "\"\n"
         temp_sample_file.write_file_line(target_line, replacement_line)
-
-        temp_sample_file.write_file_line(self.COMMON_LINE, self.COMMON_REPLACEMENT_LINE)
 
         with BaseClientTest.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
