@@ -44,6 +44,10 @@ class FakeEpoServerCallback(RequestCallback):
         }
     ]
 
+    @property
+    def epo_request_topic(self):
+        return self.EPO_REQUEST_TOPIC + self.id_number
+
     def __init__(self, client, id_number):
         """
         Constructor parameters:
@@ -53,10 +57,8 @@ class FakeEpoServerCallback(RequestCallback):
         super(FakeEpoServerCallback, self).__init__()
 
         self._client = client
-        self.EPO_REQUEST_TOPIC += str(id_number)
-        self._callbacks = {
-            self.EPO_REQUEST_TOPIC: self.on_request
-        }
+        self.id_number = str(id_number)
+
 
     def on_request(self, request):
         try:

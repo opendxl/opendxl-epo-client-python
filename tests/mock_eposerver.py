@@ -14,15 +14,15 @@ class MockEpoServer(object):
         self._service_registration_info._ttl_lower_limit = 5
         self._service_registration_info.ttl = 5
 
-    def start_service(self):
+    def __enter__(self):
         mock_callback = FakeEpoServerCallback(self._client, self.id_number)
 
         self._service_registration_info.add_topic(
-            mock_callback.EPO_REQUEST_TOPIC,
+            mock_callback.epo_request_topic,
             mock_callback
         )
 
         self._client.register_service_sync(self._service_registration_info, 10)
 
-    def stop_service(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self._client.unregister_service_sync(self._service_registration_info, 10)

@@ -1,170 +1,188 @@
 import json
 import os
-import threading
-import subprocess
+import re
+import sys
 
-from tests.test_base import BaseEpoClientTest
+from tempfile import NamedTemporaryFile
+from mock import patch
+from tests.test_base import BaseClientTest
 from tests.test_value_constants import *
 from tests.mock_eposerver import MockEpoServer
 
-SAMPLE_FOLDER = str(os.path.dirname(
-    os.path.dirname(
-        os.path.abspath(__file__)
+if sys.version_info[0] > 2:
+    import builtins  # pylint: disable=import-error, unused-import
+    from urllib.parse import quote_plus  # pylint: disable=no-name-in-module, import-error, unused-import
+else:
+    import __builtin__  # pylint: disable=import-error
+
+    builtins = __builtin__  # pylint: disable=invalid-name
+    from urllib import quote_plus  # pylint: disable=no-name-in-module, ungrouped-imports
+
+
+def expected_print_output(detail):
+    json_string = json.dumps(
+        detail,
+        sort_keys=True,
+        separators=(".*", ": ")
     )
-).replace("\\", "/")) + "/sample"
 
-BASIC_FOLDER = SAMPLE_FOLDER + "/basic"
-
-COMMON_PY_FILENAME = SAMPLE_FOLDER + "/common.py"
-NEW_COMMON_PY_FILENAME = COMMON_PY_FILENAME + ".new"
-
-CONFIG_FOLDER = str(os.path.dirname(os.path.abspath(__file__)).replace("\\", "/"))
-CONFIG_FILENAME = CONFIG_FOLDER + "/dxlclient.config"
-NEW_CONFIG_FILENAME = CONFIG_FILENAME + ".new"
-CA_FILENAME = CONFIG_FOLDER + "/ca-bundle.crt"
-CERT_FILENAME = CONFIG_FOLDER + "/client.crt"
-KEY_FILENAME = CONFIG_FOLDER + "/client.key"
-
-def overwrite_file_line(filename, target, replacement):
-    base_file = open(filename, 'r')
-    new_file = open(filename + ".new", "w+")
-
-    for line in base_file:
-        if line.startswith(target):
-            line = replacement
-        new_file.write(line)
-
-    base_file.close()
-    new_file.close()
-
-    os.remove(filename)
-    os.rename(filename + ".new", filename)
+    return re.sub(
+        r"(\.\*)+",
+        ".*",
+        re.sub(
+            r"[{[\]}]",
+            ".*",
+            json_string
+        )
+    )
 
 
-def overwrite_common_py():
-    target_line = "CONFIG_FILE = "
-    replacement_line = target_line + "\"" + CONFIG_FILENAME + "\"\n"
-    overwrite_file_line(COMMON_PY_FILENAME, target_line, replacement_line)
+class StringContains(object):
+    def __init__(self, pattern):
+        self.pattern = pattern
+
+    def __eq__(self, other):
+        return self.pattern in other
 
 
-def overwrite_config_cert_locations():
-    target_line = "BrokerCertChain = "
-    replacement_line = target_line + "\"" + CA_FILENAME + "\"\n"
-    overwrite_file_line(CONFIG_FILENAME, target_line, replacement_line)
+class StringDoesNotContain(object):
+    def __init__(self, pattern):
+        self.pattern = pattern
 
-    target_line = "CertFile = "
-    replacement_line = target_line + "\"" + CERT_FILENAME + "\"\n"
-    overwrite_file_line(CONFIG_FILENAME, target_line, replacement_line)
-
-    target_line = "PrivateKey = "
-    replacement_line = target_line + "\"" + KEY_FILENAME + "\"\n"
-    overwrite_file_line(CONFIG_FILENAME, target_line, replacement_line)
-
-class SampleRunner(object):
-
-    def __init__(self, cmd, target=''):
-        self.cmd = cmd
-        self.target_file = target
-        self.process = None
-        self.output = "Not started"
+    def __eq__(self, other):
+        return not self.pattern in other
 
 
-    def run(self, timeout):
-        def target():
-            self.process = subprocess.Popen(
-                [self.cmd, self.target_file],
-                stdout=subprocess.PIPE,
-                #stderr=subprocess.PIPE,
-            )
-            self.output = self.process.communicate()[0]
+class StringMatchesRegEx(object):
+    def __init__(self, pattern):
+        self.pattern = pattern
 
-        thread = threading.Thread(target=target)
-        thread.start()
+    def __eq__(self, other):
+        return re.match(self.pattern, other, re.DOTALL)
 
-        thread.join(timeout)
-        if thread.is_alive():
-            self.process.terminate()
-            thread.join()
 
-        return self.output.decode('utf-8')
+class StringDoesNotMatchRegEx(object):
+    def __init__(self, pattern):
+        self.pattern = pattern
 
-class TestCoreHelpSample(BaseEpoClientTest):
+    def __eq__(self, other):
+        return not re.match(self.pattern, other)
+
+
+def run_sample(sample_file):
+    with open(sample_file) as f, \
+            patch.object(builtins, 'print') as mock_print:
+        sample_globals = {"__file__": sample_file}
+        exec(f.read(), sample_globals)  # pylint: disable=exec-used
+    return mock_print
+
+
+class TempSampleFile(object):
+
+    @property
+    def temp_file(self):
+        return self._temp_file
+
+    def __init__(self, sample_filename):
+        self._temp_file = NamedTemporaryFile(mode="w+", delete=False)
+        self._temp_file.close()
+        os.chmod(self._temp_file.name, 0o777)
+        self.base_filename = sample_filename
+        self.write_file_line()
+
+    def write_file_line(self, target=None, replacement=None):
+        base_file = open(self.base_filename, 'r')
+        with open(self._temp_file.name, 'w+') as new_sample_file:
+
+            for line in base_file:
+                if target != None and replacement != None:
+                    if line.startswith(target):
+                        line = replacement
+                new_sample_file.write(line)
+
+            base_file.close()
+            new_sample_file.close()
+
+    def __del__(self):
+        self.temp_file.close()
+        os.remove(self._temp_file.name)
+
+
+class TestSamples(BaseClientTest):
+
+    SAMPLE_FOLDER = str(os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    ).replace("\\", "/")) + "/sample"
+
+    BASIC_FOLDER = SAMPLE_FOLDER + "/basic"
+
+    COMMON_LINE = "from common import *"
+    COMMON_REPLACEMENT_LINE = "from sample.common import *"
 
     def test_corehelp_example(self):
-        # Modify common/config files to work with local ".\test" directory
-        overwrite_common_py()
-        overwrite_config_cert_locations()
-
         # Modify sample file to include necessary sample data
-        sample_filename = BASIC_FOLDER + "/basic_core_help_example.py"
+        sample_filename = self.BASIC_FOLDER + "/basic_core_help_example.py"
+        temp_sample_file = TempSampleFile(sample_filename)
 
         target_line = "EPO_UNIQUE_ID = "
         replacement_line = target_line + "\"" \
                            + LOCAL_TEST_SERVER_NAME \
                            + str(DEFAULT_EPO_SERVER_ID) \
                            + "\"\n"
-        overwrite_file_line(sample_filename, target_line, replacement_line)
+        temp_sample_file.write_file_line(target_line, replacement_line)
 
-        with self.create_client(max_retries=0) as dxl_client:
-            # Set up client, and register mock service
-            mock_epo_server = MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID)
+        temp_sample_file.write_file_line(self.COMMON_LINE, self.COMMON_REPLACEMENT_LINE)
+
+        with BaseClientTest.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
-            mock_epo_server.start_service()
 
-            sample_runner = SampleRunner(
-                cmd="python",
-                target=sample_filename
-            )
-            output = sample_runner.run(timeout=10)
+            with MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID):
+                mock_print = run_sample(temp_sample_file.temp_file.name)
 
-            self.assertNotIn("Error", str(output))
-            self.assertIn(
-                HELP_CMD_RESPONSE_PAYLOAD,
-                output.replace('\r', '')
-            )
+                mock_print.assert_any_call(
+                    StringContains(HELP_CMD_RESPONSE_PAYLOAD)
+                )
 
-            mock_epo_server.stop_service()
+                mock_print.assert_any_call(
+                    StringDoesNotContain("Error")
+                )
+
             dxl_client.disconnect()
 
-
-class TestSystemFindSample(BaseEpoClientTest):
-
     def test_systemfind_example(self):
-        # Modify common/config files to work with local ".\test" directory
-        overwrite_common_py()
-        overwrite_config_cert_locations()
-
         # Modify sample file to include necessary sample data
-        sample_filename = BASIC_FOLDER + "/basic_system_find_example.py"
+        sample_filename = self.BASIC_FOLDER + "/basic_system_find_example.py"
+        temp_sample_file = TempSampleFile(sample_filename)
 
         target_line = "EPO_UNIQUE_ID = "
         replacement_line = target_line + "\"" \
                            + LOCAL_TEST_SERVER_NAME \
                            + str(DEFAULT_EPO_SERVER_ID) \
                            + "\"\n"
-        overwrite_file_line(sample_filename, target_line, replacement_line)
+        temp_sample_file.write_file_line(target_line, replacement_line)
 
         target_line = "SEARCH_TEXT = "
         replacement_line = target_line + "\"" + SYSTEM_FIND_OSTYPE_LINUX + "\"\n"
-        overwrite_file_line(sample_filename, target_line, replacement_line)
+        temp_sample_file.write_file_line(target_line, replacement_line)
 
-        with self.create_client(max_retries=0) as dxl_client:
-            # Set up client, and register mock service
-            mock_epo_server = MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID)
+        temp_sample_file.write_file_line(self.COMMON_LINE, self.COMMON_REPLACEMENT_LINE)
+
+        with BaseClientTest.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
-            mock_epo_server.start_service()
 
-            sample_runner = SampleRunner(
-                cmd="python",
-                target=sample_filename
-            )
-            output = sample_runner.run(timeout=10)
+            with MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID):
+                mock_print = run_sample(temp_sample_file.temp_file.name)
 
-            self.assertNotIn("Error", output)
-            self.assertListEqual(
-                SYSTEM_FIND_PAYLOAD,
-                json.loads(''.join(output))
-            )
+                mock_print.assert_any_call(
+                    StringMatchesRegEx(
+                        expected_print_output(SYSTEM_FIND_PAYLOAD)
+                    )
+                )
 
-            mock_epo_server.stop_service()
+                mock_print.assert_any_call(
+                    StringDoesNotContain("Error")
+                )
+
             dxl_client.disconnect()

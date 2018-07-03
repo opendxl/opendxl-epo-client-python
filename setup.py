@@ -51,8 +51,9 @@ class CiCommand(Command):
         pass
     def run(self):
         self.run_command("lint")
+        self.run_command("test")
 
-TEST_REQUIREMENTS = ["pylint"]
+TEST_REQUIREMENTS = ["nose", "pylint"]
 
 DEV_REQUIREMENTS = TEST_REQUIREMENTS + ["sphinx"]
 
@@ -75,6 +76,8 @@ setup(
         "dev": DEV_REQUIREMENTS,
         "test": TEST_REQUIREMENTS
     },
+
+    test_suite="nose.collector",
 
     # Package author details:
     author="McAfee LLC",

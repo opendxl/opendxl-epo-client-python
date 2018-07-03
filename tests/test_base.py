@@ -6,7 +6,7 @@ import os
 from unittest import TestCase
 from dxlclient import DxlClientConfig, DxlClient
 
-class BaseEpoClientTest(TestCase):
+class BaseClientTest(TestCase):
     """
     Base DXL client class for unit tests
     """
@@ -15,7 +15,8 @@ class BaseEpoClientTest(TestCase):
     POST_OP_DELAY = 8
     REG_DELAY = 60
 
-    def create_client(self, max_retries=DEFAULT_RETRIES, thread_pool_size=1):
+    @staticmethod
+    def create_client(max_retries=DEFAULT_RETRIES, thread_pool_size=1):
         """
         Creates base DXL client
         """
