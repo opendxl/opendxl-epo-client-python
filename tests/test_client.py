@@ -18,12 +18,11 @@ class TestEpoUniqueId(BaseClientTest):
             # Set up client, and register mock service
             dxl_client.connect()
 
-            self.assertRaisesRegexp(
-                Exception,
-                "No ePO DXL services are registered with the DXL fabric",
-                EpoClient,
-                dxl_client
-            )
+            try:
+                EpoClient(dxl_client)
+
+            except Exception as ex:
+                self.assertIn("No ePO DXL services are registered with the DXL fabric", str(ex))
 
 
 class TestRunCommand(BaseClientTest):
