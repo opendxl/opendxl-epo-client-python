@@ -94,17 +94,15 @@ class TempSampleFile(object):
         self.write_file_line()
 
     def write_file_line(self, target=None, replacement=None):
-        base_file = open(self.base_filename, 'r')
-        with open(self._temp_file.name, 'w+') as new_sample_file:
+        with open(self.base_filename, 'r') as base_file:
+            with open(self._temp_file.name, 'w+') as new_sample_file:
 
-            for line in base_file:
-                if target != None and replacement != None:
-                    if line.startswith(target):
-                        line = replacement
-                new_sample_file.write(line)
+                for line in base_file:
+                    if target != None and replacement != None:
+                        if line.startswith(target):
+                            line = replacement
+                    new_sample_file.write(line)
 
-            base_file.close()
-            new_sample_file.close()
 
     def __del__(self):
         self.temp_file.close()
@@ -113,11 +111,15 @@ class TempSampleFile(object):
 
 class TestSamples(BaseClientTest):
 
-    SAMPLE_FOLDER = str(os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
+    SAMPLE_FOLDER = str(
+        os.path.join(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.abspath(__file__)
+                )
+            )
         )
-    ).replace("\\", "/")) + "/sample"
+    )+ "/sample"
 
     BASIC_FOLDER = SAMPLE_FOLDER + "/basic"
 
