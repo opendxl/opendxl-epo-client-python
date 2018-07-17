@@ -250,9 +250,9 @@ class EpoClient(Client):
             # Display the response
             logger.debug("Response:\n%s", ret_val)
             return ret_val
-        else:
-            raise Exception("Error: " + res.error_message + " (" + str(
-                res.error_code) + ")")
+
+        raise Exception("Error: " + res.error_message + " (" + str(
+            res.error_code) + ")")
 
     @staticmethod
     def lookup_epo_unique_identifiers(
