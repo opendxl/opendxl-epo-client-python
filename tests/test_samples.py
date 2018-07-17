@@ -2,7 +2,6 @@ from tests.test_base import *
 from tests.test_value_constants import *
 from tests.mock_eposerver import MockEpoServer
 
-
 class TestSamples(BaseClientTest):
 
     def test_corehelp_example(self):
