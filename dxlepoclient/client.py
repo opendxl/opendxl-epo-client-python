@@ -244,10 +244,10 @@ class EpoClient(Client):
         # Send the request and wait for a response (synchronous)
         res = dxl_client.sync_request(request, timeout=response_timeout)
 
-        # Return a dictionary corresponding to the response payload
         if res.message_type == Message.MESSAGE_TYPE_ERROR:
-            Exception("Error: " + res.error_message + " (" + str(res.error_code) + ")")
+            raise Exception("Error: " + res.error_message + " (" + str(res.error_code) + ")")
 
+        # Return a dictionary corresponding to the response payload
         ret_val = MessageUtils.decode_payload(res)
 
         # Display the response
