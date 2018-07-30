@@ -20,7 +20,7 @@ class TestSamples(BaseClientTest):
             dxl_client.connect()
 
             with MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID):
-                mock_print = BaseClientTest.run_sample(temp_sample_file.temp_file.name)
+                mock_print = self.run_sample(temp_sample_file.temp_file.name)
 
                 mock_print.assert_any_call(
                     StringContains(HELP_CMD_RESPONSE_PAYLOAD)
@@ -52,7 +52,7 @@ class TestSamples(BaseClientTest):
             dxl_client.connect()
 
             with MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID):
-                mock_print = BaseClientTest.run_sample(temp_sample_file.temp_file.name)
+                mock_print = self.run_sample(temp_sample_file.temp_file.name)
 
                 mock_print.assert_any_call(
                     StringMatchesRegEx(
