@@ -244,15 +244,15 @@ class EpoClient(Client):
         # Send the request and wait for a response (synchronous)
         res = dxl_client.sync_request(request, timeout=response_timeout)
 
+        if res.message_type == Message.MESSAGE_TYPE_ERROR:
+            raise Exception("Error: " + res.error_message + " (" + str(res.error_code) + ")")
+
         # Return a dictionary corresponding to the response payload
-        if res.message_type != Message.MESSAGE_TYPE_ERROR:
-            ret_val = MessageUtils.decode_payload(res)
-            # Display the response
-            logger.debug("Response:\n%s", ret_val)
-            return ret_val
-        else:
-            raise Exception("Error: " + res.error_message + " (" + str(
-                res.error_code) + ")")
+        ret_val = MessageUtils.decode_payload(res)
+
+        # Display the response
+        logger.debug("Response:\n%s", ret_val)
+        return ret_val
 
     @staticmethod
     def lookup_epo_unique_identifiers(
