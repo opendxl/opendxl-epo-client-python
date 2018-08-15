@@ -2,9 +2,10 @@ from tests.test_base import *
 from tests.test_value_constants import *
 from tests.mock_eposerver import MockEpoServer
 
+
 class TestSamples(BaseClientTest):
 
-    def test_corehelp_example(self):
+    def test_core_help_example(self):
         # Modify sample file to include necessary sample data
         sample_filename = self.BASIC_FOLDER + "/basic_core_help_example.py"
         temp_sample_file = TempSampleFile(sample_filename)
@@ -16,7 +17,7 @@ class TestSamples(BaseClientTest):
                            + "\"\n"
         temp_sample_file.write_file_line(target_line, replacement_line)
 
-        with BaseClientTest.create_client(max_retries=0) as dxl_client:
+        with self.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
 
             with MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID):
@@ -32,7 +33,7 @@ class TestSamples(BaseClientTest):
 
             dxl_client.disconnect()
 
-    def test_systemfind_example(self):
+    def test_system_find_example(self):
         # Modify sample file to include necessary sample data
         sample_filename = self.BASIC_FOLDER + "/basic_system_find_example.py"
         temp_sample_file = TempSampleFile(sample_filename)
@@ -48,7 +49,7 @@ class TestSamples(BaseClientTest):
         replacement_line = target_line + "\"" + SYSTEM_FIND_OSTYPE_LINUX + "\"\n"
         temp_sample_file.write_file_line(target_line, replacement_line)
 
-        with BaseClientTest.create_client(max_retries=0) as dxl_client:
+        with self.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
 
             with MockEpoServer(dxl_client, id_number=DEFAULT_EPO_SERVER_ID):
@@ -56,7 +57,7 @@ class TestSamples(BaseClientTest):
 
                 mock_print.assert_any_call(
                     StringMatchesRegEx(
-                        BaseClientTest.expected_print_output(SYSTEM_FIND_PAYLOAD)
+                        self.expected_print_output(SYSTEM_FIND_PAYLOAD)
                     )
                 )
 

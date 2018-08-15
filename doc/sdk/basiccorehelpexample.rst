@@ -1,5 +1,5 @@
 Basic Core Help Example
-========================
+=======================
 
 This sample invokes and displays the results of the "core help" remote command via the ePO DXL service.
 The "core help" command lists the remote commands that are exposed by a particular ePO server.
@@ -7,9 +7,16 @@ The "core help" command lists the remote commands that are exposed by a particul
 
 Prerequisites
 *************
+
 * The samples configuration step has been completed (see :doc:`sampleconfig`)
-* The ePO DXL service is running and available on the fabric (see `ePO DXL Python Service <https://github.com/opendxl/opendxl-epo-service-python>`_)
-* The client is authorized to invoke the ePO DXL Service (see `ePO DXL Service Client Authorization <https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization>`_)
+* An ePO DXL service is running and available on the fabric. If version 5.0
+  or later of the DXL ePO extensions are installed on your ePO server, an
+  ePO DXL service should already be running on the fabric. If you are using an
+  earlier version of the DXL ePO extensions, you can use the
+  `ePO DXL Python Service <https://github.com/opendxl/opendxl-epo-service-python>`_.
+* The client is authorized to invoke the ePO DXL Service, and the user that is
+  connecting to the ePO server (within the ePO DXL service) has permission to
+  execute the "core help" remote command (see :doc:`authorization`).
 
 Setup
 *****
@@ -42,10 +49,10 @@ To run this sample execute the ``sample/basic/basic_core_help_example.py`` scrip
 
 The output should appear similar to the following:
 
-    .. code-block:: python
+    .. parsed-literal::
 
-        ComputerMgmt.createAgentDeploymentUrlCmd deployPath groupId [edit] [ahId]
-        [fallBackAhId] [urlName] [agentVersionNumber] [agentHotFix] - Create Agent
+        ComputerMgmt.createAgentDeploymentUrlCmd deployPath groupId urlName
+        agentVersionNumber agentHotFix [edit] [ahId] [fallBackAhId] - Create Agent
         Deployment URL Command
         ComputerMgmt.createCustomInstallPackageCmd deployPath [ahId] [fallBackAhId] -
         Create Custom Install Package Command
@@ -54,13 +61,9 @@ The output should appear similar to the following:
         ComputerMgmt.createTagGroup parentTagGroupId newTagGroupName - Create a new
         subgroup under an existing tag group.
         ComputerMgmt.deleteTag tagIds [forceDelete] - Delete one or more tags.
-        ComputerMgmt.deleteTagGroup tagGroupIds [deleteTags] - Delete one or more Tag
-        Groups.
-        ComputerMgmt.listAllTagGroups - List All Tag Groups in Tag Group Tree
-        ComputerMgmt.moveTagsToTagGroup tagIds tagGroupId - Move tags to an existing tag
-        group.
 
         ...
+
 
 Each remote command exposed by the particular ePO server is listed along with its associated parameters.
 

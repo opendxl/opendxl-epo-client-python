@@ -1,9 +1,8 @@
-
 McAfee ePolicy Orchestrator (ePO) DXL Client Documentation
 ==========================================================
 
 Introduction
--------------------
+------------
 
 .. toctree::
 	:maxdepth: 1
@@ -18,13 +17,21 @@ Installation
 
 	installation
 
+Authorization
+-------------
+
+.. toctree::
+	:maxdepth: 1
+
+	authorization
+
 Python API
 ----------
 
 .. toctree::
-    :titlesonly:
+	:titlesonly:
 
-    dxlepoclient
+	dxlepoclient
 
 Samples
 -------
@@ -32,16 +39,14 @@ Samples
 Configuration
 
 .. toctree::
-    :maxdepth: 1
+	:maxdepth: 1
 
-    sampleconfig
+	sampleconfig
 
 Basic
 
 .. toctree::
-    :maxdepth: 1
+	:maxdepth: 1
 
-    basiccorehelpexample
-    basicsystemfindexample
-
-
+	basiccorehelpexample
+	basicsystemfindexample

@@ -3,3 +3,4 @@ dist/
 *.pyc
 build/
 dxlepoclient.egg-info/
+tests/dxlclient.config

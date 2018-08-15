@@ -5,6 +5,7 @@
 
 from __future__ import absolute_import
 import logging
+import os
 from dxlclient import Request, Message
 from dxlbootstrap.client import Client
 from dxlbootstrap.util import MessageUtils
@@ -58,20 +59,38 @@ class EpoClient(Client):
     topics and message formats.
     """
 
-    # The type of the ePO DXL service that is registered with the fabric
+    # The type of the ePO DXL "remote" service that is registered with
+    # the fabric
     DXL_SERVICE_TYPE = "/mcafee/service/epo/remote"
+    _DXL_EPO_REMOTE_SERVICE_TYPE = DXL_SERVICE_TYPE
 
-    # The prefix for ePO DXL service request topics
+    # The prefix for ePO DXL "remote" service request topics
     DXL_REQUEST_PREFIX = DXL_SERVICE_TYPE + "/"
+    _DXL_EPO_REMOTE_REQUEST_PREFIX = DXL_REQUEST_PREFIX
 
-    # The format for request topics that are associated with the ePO DXL service
+    # The format for request topics that are associated with the ePO DXL
+    # "remote" service
     DXL_REQUEST_FORMAT = DXL_REQUEST_PREFIX + "{0}"
+    _DXL_EPO_REMOTE_REQUEST_FORMAT = DXL_REQUEST_FORMAT
 
     # The default amount of time (in seconds) to wait for a response from the ePO DXL service
     DEFAULT_RESPONSE_TIMEOUT = Client._DEFAULT_RESPONSE_TIMEOUT
 
     # The minimum amount of time (in seconds) to wait for a response from the ePO DXL service
     MIN_RESPONSE_TIMEOUT = Client._MIN_RESPONSE_TIMEOUT
+
+    # The type of the ePO DXL "commands" service that is registered with
+    # the fabric
+    _DXL_EPO_COMMANDS_SERVICE_TYPE = "/mcafee/service/epo/commands"
+
+    # The format for request topics that are associated with the ePO DXL
+    # "commands" service
+    _DXL_EPO_COMMANDS_REQUEST_FORMAT = \
+        "/mcafee/service/epo/command/{0}/remote/{1}"
+
+    # Error code that a DXL broker returns in an ErrorResponse to a request
+    # which targets an unregistered request topic
+    _DXL_SERVICE_UNAVAILABLE_ERROR_CODE = 0x80000001
 
     def __init__(self, dxl_client, epo_unique_id=None):
         """
@@ -120,9 +139,15 @@ class EpoClient(Client):
                 raise Exception((
                     "Multiple ePO DXL services are registered with the DXL fabric ({0}). "
                     "A specific ePO unique identifier must be specified.").format(
-                        ", ".join(epo_ids)))
+                        ", ".join(sorted(epo_ids))))
 
         self._epo_unique_id = epo_unique_id
+
+        # Controls whether the built-in ePO "commands" (True) or
+        # standalone "remote" service
+        # (https://github.com/opendxl/opendxl-epo-service-python)
+        # (False) is used to make command requests
+        self._use_epo_commands_service = True
 
     def run_command(self, command_name, params=None,
                     output_format=OutputFormat.JSON):
@@ -135,8 +160,7 @@ class EpoClient(Client):
 
                 # Run the system find command
                 result = epo_client.run_command("system.find",
-                                                {"searchText": "mySystem"},
-                                                output_format=OutputFormat.JSON)
+                                                {"searchText": "mySystem"})
 
         **Example Response**
 
@@ -161,21 +185,58 @@ class EpoClient(Client):
         :param params: (optional) A dictionary (``dict``) containing the
             parameters for the command
         :param output_format: (optional) The output format for ePO to use when
-            returning the response. The list of `output formats` can be found in
-            the :class:`OutputFormat` constants class.
+            returning the response. The list of `output formats` can be found
+            in the :class:`OutputFormat` constants class. This parameter can
+            only be set to a value other than :const:`OutputFormat.JSON`
+            when the command is processed by a
+            `McAfee ePO DXL Python Service <https://github.com/opendxl/opendxl-epo-service-python>`_
+            service. If the command is processed by the ePO-hosted
+            `DXL commands` service, this parameter can only be set to
+            :const:`OutputFormat.JSON`. For compatibility across ePO service
+            configurations, it is suggested to not set this parameter (using
+            the default value of :const:`OutputFormat.JSON`).
+        :raise Exception: If an unsupported `output format` is specified. This
+            exception is raised if the command is to be sent to an ePO-hosted
+            `DXL Commands` service and an `output format` of anything other
+            than :const:`OutputFormat.JSON` is specified.
         :return: The result of the remote command execution
         """
         OutputFormat.validate(output_format)
         if params is None:
             params = {}
 
-        return self._invoke_epo_service({
-            "command": command_name,
-            "output": output_format,
-            "params": params
-        })
+        # Try the request through the `commands` service first. If that fails
+        # due to the service not being found, try the request again through
+        # the `remote` service. Update the `_use_epo_commands_service`
+        # variable based on which service the request could be made through
+        # so that subsequent requests can be made through the valid service.
+        # Non-JSON requests are attempted through the `remote` service first
+        # since the `commands` service only supports JSON.
+        if self._use_epo_commands_service and \
+                output_format == OutputFormat.JSON:
+            res = self._invoke_epo_commands_service(
+                command_name, output_format, params)
+            if self._is_service_not_available_error_response(res):
+                res = self._invoke_epo_remote_service(
+                    command_name, output_format, params
+                )
+                if res.message_type == Message.MESSAGE_TYPE_RESPONSE:
+                    self._use_epo_commands_service = False
+        else:
+            res = self._invoke_epo_remote_service(
+                command_name, output_format, params
+            )
+            if self._is_service_not_available_error_response(res):
+                res = self._invoke_epo_commands_service(
+                    command_name, output_format, params
+                )
+                if res.message_type == Message.MESSAGE_TYPE_RESPONSE:
+                    self._use_epo_commands_service = True
+
+        return self._decode_response(res)
 
     def help(self, output_format=OutputFormat.VERBOSE):
+        # pylint: disable=line-too-long
         """
         Returns the list of remote commands that are supported by the ePO server this client is
         communicating with.
@@ -185,14 +246,14 @@ class EpoClient(Client):
             .. code-block:: python
 
                 # Display the help
-                print epo_client.help()
+                print(epo_client.help())
 
         **Example Response**
 
-            .. code-block:: python
+            .. parsed-literal::
 
-                ComputerMgmt.createAgentDeploymentUrlCmd deployPath groupId [edit] [ahId]
-                [fallBackAhId] [urlName] [agentVersionNumber] [agentHotFix] - Create Agent
+                ComputerMgmt.createAgentDeploymentUrlCmd deployPath groupId urlName
+                agentVersionNumber agentHotFix [edit] [ahId] [fallBackAhId] - Create Agent
                 Deployment URL Command
                 ComputerMgmt.createCustomInstallPackageCmd deployPath [ahId] [fallBackAhId] -
                 Create Custom Install Package Command
@@ -205,21 +266,116 @@ class EpoClient(Client):
                 ...
 
         :param output_format: (optional) The output format for ePO to use when
-            returning the response. The list of `output formats` can be found in
-            the :class:`OutputFormat` constants class.
+            returning the response. The list of `output formats` can be found
+            in the :class:`OutputFormat` constants class. If the command is
+            processed by the ePO-hosted `DXL Commands` service, this parameter
+            can only be set to :const:`OutputFormat.VERBOSE` or
+            :const:`OutputFormat.JSON`.
+        :raise Exception: If an unsupported `output format` is specified. This
+            exception is raised if the command is to be sent to an ePO-hosted
+            `DXL Commands` service and an `output format` of anything other
+            than :const:`OutputFormat.VERBOSE` or :const:`OutputFormat.JSON`
+            is specified.
         :return: The result of the remote command execution
         """
-        return self.run_command("core.help", output_format=output_format)
+        res = self.run_command(
+            "core.help",
+            output_format=OutputFormat.JSON \
+                if output_format == OutputFormat.VERBOSE else output_format)
+        if output_format == OutputFormat.VERBOSE:
+            res_list = MessageUtils.json_to_dict(res)
+            res = os.linesep.join(res_list)
+        return res
 
-    def _invoke_epo_service(self, payload_dict):
+    @staticmethod
+    def _normalized_error_code(error_response):
         """
-        Invokes the ePO DXL service for the purposes of executing a remote command
-        :param payload_dict: The dictionary (``dict``) to use as the payload of the DXL request
-        :return: The result of the remote command execution
+        Get the error code from an ErrorResponse. Adjust the value if it
+        is negative for use in translating standard DXL broker error codes.
+
+        :param error_response: The DXL ErrorResponse
+        :return: The error code (with any necessary adjustments).
+        """
+        return (0xFFFFFFFF + error_response.error_code + 1) \
+            if error_response.error_code < 0 else error_response.error_code
+
+    def _is_service_not_available_error_response(self, res):
+        """
+        Determine if the DXL Response is an ErrorResponse with a
+        "service unavailable" error code.
+
+        :param res: The DXL Response
+        :return: True if the response is a "service unavailable"
+            ErrorResponse, else False.
+        """
+        return (res.message_type == Message.MESSAGE_TYPE_ERROR) and \
+               (self._normalized_error_code(res) ==
+                self._DXL_SERVICE_UNAVAILABLE_ERROR_CODE)
+
+    def _invoke_epo_commands_service(self, command_name,
+                                     output_format, params):
+        """
+        Invokes the ePO DXL "commands" service for the purposes of executing a
+        remote command.
+
+        :param command_name: The name of the remote command to invoke
+        :param output_format: The output format for ePO to use when returning
+            the response
+        :param params: A dictionary (``dict``) containing the parameters for
+            the command
+        :return: A DXL Response object containing the result of the remote
+            command execution
+        """
+        if output_format != OutputFormat.JSON:
+            raise Exception(
+                "Invalid output format: " + output_format +
+                ". ePO commands service only supports " +
+                OutputFormat.JSON + ".")
+
+        return self._invoke_epo_service(
+            self._DXL_EPO_COMMANDS_REQUEST_FORMAT.format(
+                self._epo_unique_id,
+                command_name.replace(".", "/")
+            ),
+            params
+        )
+
+    def _invoke_epo_remote_service(self, command_name, output_format, params):
+        """
+        Invokes the ePO DXL "remote" service for the purposes of executing a
+        remote command.
+
+        :param command_name: The name of the remote command to invoke
+        :param output_format: The output format for ePO to use when returning
+            the response
+        :param params: A dictionary (``dict``) containing the parameters for
+            the command
+        :return: A DXL Response object containing the result of the remote
+            command execution
+        """
+        return self._invoke_epo_service(
+            self._DXL_EPO_REMOTE_REQUEST_FORMAT.format(self._epo_unique_id),
+            {
+                "command": command_name,
+                "output": output_format,
+                "params": params
+            }
+        )
+
+    def _invoke_epo_service(self, request_topic, payload_dict):
+        """
+        Invokes the ePO DXL service for the purposes of executing a remote
+        command.
+
+        :param request_topic: DXL request topic to use for the request
+        :param payload_dict: The dictionary (``dict``) to use as the payload
+          of the DXL request
+        :return: A DXL Response object containing the result of the remote
+            command execution
         """
         return self._sync_request(
             self._dxl_client,
-            Request(self.DXL_REQUEST_FORMAT.format(self._epo_unique_id)),
+            Request(request_topic),
             self.response_timeout,
             payload_dict)
 
@@ -239,13 +395,24 @@ class EpoClient(Client):
 
         # Display the request that is going to be sent
         logger.debug("Request:\n%s",
-                     MessageUtils.dict_to_json(payload_dict, pretty_print=True))
+                     MessageUtils.dict_to_json(payload_dict,
+                                               pretty_print=True))
 
         # Send the request and wait for a response (synchronous)
-        res = dxl_client.sync_request(request, timeout=response_timeout)
+        return dxl_client.sync_request(request, timeout=response_timeout)
 
+    @staticmethod
+    def _decode_response(res):
+        """
+        Decodes the payload from DXL Response object into a string.
+
+        :param res: The DXL Response object to decode.
+        :return: The decoded payload.
+        :raise Exception: If ``res`` is an ErrorResponse.
+        """
         if res.message_type == Message.MESSAGE_TYPE_ERROR:
-            raise Exception("Error: " + res.error_message + " (" + str(res.error_code) + ")")
+            raise Exception("Error: " + res.error_message + " (" + str(
+                res.error_code) + ")")
 
         # Return a dictionary corresponding to the response payload
         ret_val = MessageUtils.decode_payload(res)
@@ -253,6 +420,82 @@ class EpoClient(Client):
         # Display the response
         logger.debug("Response:\n%s", ret_val)
         return ret_val
+
+    @staticmethod
+    def _query_service_registry(dxl_client, response_timeout, service_type):
+        """
+        Queries the broker service registry for services.
+
+        :param dxl_client: The DXL client with which to perform the request.
+        :param response_timeout: The maximum amount of time to wait for a
+            response.
+        :param service_type: The service type to return data for.
+        :return: A ``list`` containing info for each registered service whose
+            ``service_type`` matches the ``service_type`` parameter passed
+            into this method.
+        """
+        res = EpoClient._decode_response(
+            EpoClient._sync_request(
+                dxl_client,
+                Request("/mcafee/service/dxl/svcregistry/query"),
+                response_timeout,
+                {"serviceType": service_type}))
+        res_dict = MessageUtils.json_to_dict(res)
+        return res_dict["services"].values() if "services" in res_dict else []
+
+    @staticmethod
+    def _lookup_epo_commands_service_unique_ids(dxl_client, response_timeout):
+        """
+        Returns a ``set`` containing the unique identifiers for the ePO servers
+        that are currently exposed to the DXL fabric via an ePO "commands"
+        service. "commands" services are registered by version 5.0 and
+        later of the ePO DXL extensions.
+
+        :param dxl_client: The DXL client with which to perform the request.
+        :param response_timeout: The maximum amount of time to wait for a
+            response.
+        :return: A ``set`` containing the unique identifiers for the ePO
+            servers that are currently exposed to the DXL fabric.
+        """
+        services = EpoClient._query_service_registry(
+            dxl_client, response_timeout,
+            EpoClient._DXL_EPO_COMMANDS_SERVICE_TYPE)
+        ret_ids = set()
+        for service in services:
+            if "metaData" in service:
+                metadata = service["metaData"]
+                if "epoGuid" in metadata:
+                    ret_ids.add(metadata["epoGuid"])
+        return ret_ids
+
+    @staticmethod
+    def _lookup_epo_remote_service_unique_ids(dxl_client, response_timeout):
+        """
+        Returns a ``set`` containing the unique identifiers for the ePO servers
+        that are currently exposed to the DXL fabric via an ePO "remote"
+        service. "remote" services are registered by the standalone
+        `ePO DXL Python Service <https://github.com/opendxl/opendxl-epo-service-python>`__.
+
+        :param dxl_client: The DXL client with which to perform the request.
+        :param response_timeout: The maximum amount of time to wait for a
+            response.
+        :return: A ``set`` containing the unique identifiers for the ePO
+            servers that are currently exposed to the DXL fabric.
+        """
+        services = EpoClient._query_service_registry(
+            dxl_client, response_timeout,
+            EpoClient.DXL_SERVICE_TYPE)
+        ret_ids = set()
+        for service in services:
+            if "requestChannels" in service:
+                for channel in service["requestChannels"]:
+                    if channel.startswith(
+                            EpoClient._DXL_EPO_REMOTE_REQUEST_PREFIX):
+                        ret_ids.add(
+                            channel[len(
+                                EpoClient._DXL_EPO_REMOTE_REQUEST_PREFIX):]
+                        )
+        return ret_ids
 
     @staticmethod
     def lookup_epo_unique_identifiers(
@@ -266,20 +509,11 @@ class EpoClient(Client):
         :return: A ``set`` containing the unique identifiers for the ePO servers that are currently
             exposed to the DXL fabric.
         """
-        res = EpoClient._sync_request(
-            dxl_client,
-            Request("/mcafee/service/dxl/svcregistry/query"),
-            response_timeout,
-            {"serviceType": EpoClient.DXL_SERVICE_TYPE})
-        res_dict = MessageUtils.json_to_dict(res)
-
-        ret_ids = set()
-        if "services" in res_dict:
-            for service in res_dict["services"].values():
-                if "requestChannels" in service:
-                    channels = service['requestChannels']
-                    for channel in channels:
-                        if channel.startswith(EpoClient.DXL_REQUEST_PREFIX):
-                            ret_ids.add(
-                                channel[len(EpoClient.DXL_REQUEST_PREFIX):])
+        ret_ids = EpoClient._lookup_epo_commands_service_unique_ids(
+            dxl_client, response_timeout
+        )
+        if not ret_ids:
+            ret_ids = EpoClient._lookup_epo_remote_service_unique_ids(
+                dxl_client, response_timeout
+            )
         return ret_ids
