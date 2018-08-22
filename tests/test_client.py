@@ -7,12 +7,52 @@ from tests.mock_eposerver import MockEpoServer
 
 class TestClient(BaseClientTest):
 
-    def test_init_unique_id(self):
+    def test_init_valid_unique_id(self):
         with self.create_client(max_retries=0) as dxl_client:
-            epo_client = EpoClient(dxl_client,
-                                   epo_unique_id=LOCAL_TEST_SERVER_NAME)
+            dxl_client.connect()
 
-            self.assertEqual(epo_client._epo_unique_id, LOCAL_TEST_SERVER_NAME)
+            for use_commands_service in [True, False]:
+                with MockEpoServer(dxl_client,
+                                   use_commands_service=use_commands_service):
+                    epo_id = LOCAL_TEST_SERVER_NAME +\
+                             str(DEFAULT_EPO_SERVER_ID)
+                    epo_client = EpoClient(dxl_client, epo_unique_id=epo_id)
+                    self.assertEqual(epo_client._epo_unique_id, epo_id)
+                    self.assertIn("core.help", epo_client.help())
+
+    def test_init_valid_remote_unique_id_and_unauthorized_command_service(self):
+        with self.create_client(max_retries=0) as dxl_client:
+            dxl_client.connect()
+
+            with MockEpoServer(dxl_client,
+                               use_commands_service=True,
+                               id_number="0",
+                               user_authorized=False),\
+                    MockEpoServer(dxl_client,
+                                  use_commands_service=False,
+                                  id_number=1):
+                epo_id = LOCAL_TEST_SERVER_NAME + "1"
+                epo_client = EpoClient(dxl_client,
+                                       epo_unique_id=epo_id)
+                self.assertEqual(epo_client._epo_unique_id, epo_id)
+                self.assertIn("core.help", epo_client.help())
+
+    def test_init_invalid_unique_id(self):
+        with self.create_client(max_retries=0) as dxl_client:
+            dxl_client.connect()
+
+            for use_commands_service in [True, False]:
+                with MockEpoServer(dxl_client,
+                                   use_commands_service=use_commands_service):
+                    epo_id = LOCAL_TEST_SERVER_NAME + "1"
+                    self.assertRaisesRegex(
+                        Exception,
+                        "No ePO DXL services are registered " +
+                        "with the DXL fabric for id: " + epo_id,
+                        EpoClient,
+                        dxl_client,
+                        epo_unique_id=epo_id
+                    )
 
     def test_init_no_unique_id_and_no_epo_service(self):
         with self.create_client(max_retries=0) as dxl_client:

@@ -88,10 +88,6 @@ class EpoClient(Client):
     _DXL_EPO_COMMANDS_REQUEST_FORMAT = \
         "/mcafee/service/epo/command/{0}/remote/{1}"
 
-    # Error code that a DXL broker returns in an ErrorResponse to a request
-    # which targets an unregistered request topic
-    _DXL_SERVICE_UNAVAILABLE_ERROR_CODE = 0x80000001
-
     def __init__(self, dxl_client, epo_unique_id=None):
         """
 
@@ -120,15 +116,33 @@ class EpoClient(Client):
             DXL service
         :param epo_unique_id: (optional) The unique identifier used to specify
             the ePO server that this client will communicate with.
+        :raise Exception: If a value is provided for `epo_unique_id` but
+            no matching service is registered with the DXL fabric.
         """
         super(EpoClient, self).__init__(dxl_client)
         self._dxl_client = dxl_client
 
-        if epo_unique_id is None:
-            logger.debug("Attempting to find ePO service identifier...")
-            epo_ids = self.lookup_epo_unique_identifiers(self._dxl_client,
-                                                         self._response_timeout)
+        # Need to be connected to the DXL fabric before making any service
+        # registry queries
+        if not dxl_client.connected:
+            dxl_client.connect()
 
+        # Controls whether the built-in ePO "commands" (True) or
+        # standalone "remote" service
+        # (https://github.com/opendxl/opendxl-epo-service-python)
+        # (False) is used to make command requests
+        self._use_epo_commands_service = True
+
+        if epo_unique_id:
+            logger.debug("Validating the ePO service identifier...")
+            self._use_epo_commands_service = \
+                self._is_epo_unique_id_for_commands_service(
+                    epo_unique_id, self._dxl_client, self._response_timeout)
+        else:
+            logger.debug("Attempting to find ePO service identifier...")
+            self._use_epo_commands_service, epo_ids = \
+                self._lookup_epo_unique_identifiers(self._dxl_client,
+                                                    self._response_timeout)
             epo_ids_len = len(epo_ids)
             if epo_ids_len is 1:
                 epo_unique_id = next(iter(epo_ids))
@@ -142,12 +156,6 @@ class EpoClient(Client):
                         ", ".join(sorted(epo_ids))))
 
         self._epo_unique_id = epo_unique_id
-
-        # Controls whether the built-in ePO "commands" (True) or
-        # standalone "remote" service
-        # (https://github.com/opendxl/opendxl-epo-service-python)
-        # (False) is used to make command requests
-        self._use_epo_commands_service = True
 
     def run_command(self, command_name, params=None,
                     output_format=OutputFormat.JSON):
@@ -216,22 +224,10 @@ class EpoClient(Client):
                 output_format == OutputFormat.JSON:
             res = self._invoke_epo_commands_service(
                 command_name, output_format, params)
-            if self._is_service_not_available_error_response(res):
-                res = self._invoke_epo_remote_service(
-                    command_name, output_format, params
-                )
-                if res.message_type == Message.MESSAGE_TYPE_RESPONSE:
-                    self._use_epo_commands_service = False
         else:
             res = self._invoke_epo_remote_service(
                 command_name, output_format, params
             )
-            if self._is_service_not_available_error_response(res):
-                res = self._invoke_epo_commands_service(
-                    command_name, output_format, params
-                )
-                if res.message_type == Message.MESSAGE_TYPE_RESPONSE:
-                    self._use_epo_commands_service = True
 
         return self._decode_response(res)
 
@@ -286,31 +282,6 @@ class EpoClient(Client):
             res_list = MessageUtils.json_to_dict(res)
             res = os.linesep.join(res_list)
         return res
-
-    @staticmethod
-    def _normalized_error_code(error_response):
-        """
-        Get the error code from an ErrorResponse. Adjust the value if it
-        is negative for use in translating standard DXL broker error codes.
-
-        :param error_response: The DXL ErrorResponse
-        :return: The error code (with any necessary adjustments).
-        """
-        return (0xFFFFFFFF + error_response.error_code + 1) \
-            if error_response.error_code < 0 else error_response.error_code
-
-    def _is_service_not_available_error_response(self, res):
-        """
-        Determine if the DXL Response is an ErrorResponse with a
-        "service unavailable" error code.
-
-        :param res: The DXL Response
-        :return: True if the response is a "service unavailable"
-            ErrorResponse, else False.
-        """
-        return (res.message_type == Message.MESSAGE_TYPE_ERROR) and \
-               (self._normalized_error_code(res) ==
-                self._DXL_SERVICE_UNAVAILABLE_ERROR_CODE)
 
     def _invoke_epo_commands_service(self, command_name,
                                      output_format, params):
@@ -498,6 +469,67 @@ class EpoClient(Client):
         return ret_ids
 
     @staticmethod
+    def _is_epo_unique_id_for_commands_service(
+            epo_unique_id, dxl_client,
+            response_timeout=Client._DEFAULT_RESPONSE_TIMEOUT):
+        """
+        Determines if the supplied ``epoUniqueId`` maps to a ePO DXL
+        "commands" or a "remote" service.
+
+        :param epo_unique_id: The unique identifier used to specify
+            the ePO server that this client will communicate with.
+        :param dxl_client: The DXL client to use for communication with the ePO
+            DXL service
+        :param response_timeout: (optional) The maximum amount of time to wait
+            for a response
+        :return: ``True`` if the unique identifier matches a "commands"
+            service, ``False`` if the unique identifier matches a "remote"
+            service.
+        :raise Exception: If no service matching the unique id is registered
+            with the DXL fabric.
+        """
+        id_for_commands_service = True
+        if epo_unique_id not in \
+            EpoClient._lookup_epo_commands_service_unique_ids(dxl_client,
+                                                              response_timeout):
+            id_for_commands_service = False
+            if epo_unique_id not in \
+                    EpoClient._lookup_epo_remote_service_unique_ids(dxl_client,
+                                                                    response_timeout):
+                raise Exception("No ePO DXL services are registered with " +
+                                "the DXL fabric for id: " + epo_unique_id)
+        return id_for_commands_service
+
+    @staticmethod
+    def _lookup_epo_unique_identifiers(dxl_client, response_timeout):
+        """
+        Returns a ``tuple`` where the first item is a ``bool`` representing
+        whether the returned ids are for "commands" services (``True``) or
+        "remote" services (``False``) and the second item is a ``set``
+        containing the unique identifiers for the ePO servers that are
+        currently exposed to the DXL fabric.
+
+        :param dxl_client: The DXL client with which to perform the request
+        :param response_timeout: (optional) The maximum amount of time to wait
+            for a response
+        :return: A ``tuple`` where the first item is a ``bool`` representing
+            whether the returned ids are for "commands" services (``True``) or
+            "remote" services (``False``) and the second item is a ``set``
+            containing the unique identifiers for the ePO servers that are
+            currently exposed to the DXL fabric.
+        """
+        ids_for_epo_commands_service = True
+        ret_ids = EpoClient._lookup_epo_commands_service_unique_ids(
+            dxl_client, response_timeout
+        )
+        if not ret_ids:
+            ret_ids = EpoClient._lookup_epo_remote_service_unique_ids(
+                dxl_client, response_timeout
+            )
+            ids_for_epo_commands_service = False
+        return ids_for_epo_commands_service, ret_ids
+
+    @staticmethod
     def lookup_epo_unique_identifiers(
             dxl_client, response_timeout=Client._DEFAULT_RESPONSE_TIMEOUT):
         """
@@ -509,11 +541,5 @@ class EpoClient(Client):
         :return: A ``set`` containing the unique identifiers for the ePO servers that are currently
             exposed to the DXL fabric.
         """
-        ret_ids = EpoClient._lookup_epo_commands_service_unique_ids(
-            dxl_client, response_timeout
-        )
-        if not ret_ids:
-            ret_ids = EpoClient._lookup_epo_remote_service_unique_ids(
-                dxl_client, response_timeout
-            )
-        return ret_ids
+        return EpoClient._lookup_epo_unique_identifiers(
+            dxl_client, response_timeout)[1]

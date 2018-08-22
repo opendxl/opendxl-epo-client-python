@@ -3,10 +3,15 @@ from tests.mock_requesthandlers import *
 
 
 class MockEpoServer(object):
-    def __init__(self, client, id_number=0, use_commands_service=True):
+    def __init__(self,
+                 client,
+                 id_number=0,
+                 use_commands_service=True,
+                 user_authorized=True):
         self._client = client
         self.id_number = id_number
         self.use_commands_service = use_commands_service
+        self.user_authorized = user_authorized
 
         # Create DXL Service Registration object
         self._service_registration_info = ServiceRegistrationInfo(
@@ -23,7 +28,8 @@ class MockEpoServer(object):
     def __enter__(self):
         mock_callback = FakeEpoServerCallback(self._client,
                                               self.id_number,
-                                              self.use_commands_service)
+                                              self.use_commands_service,
+                                              self.user_authorized)
 
         self._service_registration_info.add_topic(
             mock_callback.epo_request_topic,

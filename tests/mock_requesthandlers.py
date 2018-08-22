@@ -61,20 +61,20 @@ class FakeEpoServerCallback(RequestCallback):
             if self.use_commands_service else self.EPO_REMOTE_REQUEST_TOPIC
         return request_topic.format(self.id_number)
 
-    def __init__(self, client, id_number, use_commands_service):
-        """
-        Constructor parameters:
-
-        :param app: The application this handler is associated with
-        """
+    def __init__(self, client, id_number, use_commands_service,
+                 user_authorized):
         super(FakeEpoServerCallback, self).__init__()
 
         self._client = client
         self.id_number = str(id_number)
         self.use_commands_service = use_commands_service
+        self.user_authorized = user_authorized
 
     def on_request(self, request):
         try:
+            if not self.user_authorized:
+                return
+
             # Build dictionary from the request payload
             req_dict = json.loads(request.payload.decode(encoding=self.UTF_8))
 
