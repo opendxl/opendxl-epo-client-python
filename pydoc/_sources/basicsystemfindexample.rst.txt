@@ -7,10 +7,14 @@ The results of the find command are displayed in JSON format.
 Prerequisites
 *************
 * The samples configuration step has been completed (see :doc:`sampleconfig`)
-* The ePO DXL service is running and available on the fabric (see `ePO DXL Python Service <https://github.com/opendxl/opendxl-epo-service-python>`_)
-* The client is authorized to invoke the ePO DXL Service (see `ePO DXL Service Client Authorization <https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization>`_)
-* The user that is connecting to the ePO server (within the ePO DXL service) has permission to execute the
-  "system find" remote command
+* An ePO DXL service is running and available on the fabric. If version 5.0
+  or later of the DXL ePO extensions are installed on your ePO server, an
+  ePO DXL service should already be running on the fabric. If you are using an
+  earlier version of the DXL ePO extensions, you can use the
+  `ePO DXL Python Service <https://github.com/opendxl/opendxl-epo-service-python>`_.
+* The client is authorized to invoke the ePO DXL Service, and the user that is
+  connecting to the ePO server (within the ePO DXL service) has permission to
+  execute the "system find" remote command (see :doc:`authorization`).
 
 Setup
 *****
@@ -93,15 +97,13 @@ The majority of the sample code is shown below:
             epo_client = EpoClient(client, EPO_UNIQUE_ID)
 
             # Run the system find command
-            res = epo_client.run_command("system.find",
-                                         {"searchText": SEARCH_TEXT},
-                                         output_format=OutputFormat.JSON)
+            res = epo_client.run_command("system.find", {"searchText": SEARCH_TEXT})
 
-            # Load find result into dictionary
-            res_dict = MessageUtils.json_to_dict(res)
+            # Load find result into list
+            res_list = MessageUtils.json_to_dict(res)
 
             # Display the results
-            print(MessageUtils.dict_to_json(res_dict, pretty_print=True))
+            print(MessageUtils.dict_to_json(res_list, pretty_print=True))
 
 
 Once a connection is established to the DXL fabric, a :class:`dxlepoclient.client.EpoClient` instance is created
@@ -110,8 +112,8 @@ to invoke remote commands on is specified as an argument to the client construct
 value of ``None`` is specified which triggers the client to automatically determine the ePO server's unique identifier.
 This will not work if multiple ePO servers are connected to the fabric (an exception will be raised).
 
-Next, the :func:`dxlepoclient.client.EpoClient.run_command` method is invoked with an output
-format of ``json`` and a ``searchText`` parameter that is specified with the value of ``broker``.
+Next, the :func:`dxlepoclient.client.EpoClient.run_command` method is invoked
+with a ``searchText`` parameter that is specified with the value of ``broker``.
 
-Finally, the JSON response text is loaded into a Python dictionary (``dict``), formatted,
+Finally, the JSON response text is loaded into a Python ``list``, formatted,
 and displayed to the screen.

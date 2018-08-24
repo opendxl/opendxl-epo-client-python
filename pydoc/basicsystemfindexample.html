@@ -46,10 +46,14 @@ The results of the find command are displayed in JSON format.</p>
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>The samples configuration step has been completed (see <a class="reference internal" href="sampleconfig.html"><span class="doc">Samples Configuration</span></a>)</li>
-<li>The ePO DXL service is running and available on the fabric (see <a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>)</li>
-<li>The client is authorized to invoke the ePO DXL Service (see <a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization">ePO DXL Service Client Authorization</a>)</li>
-<li>The user that is connecting to the ePO server (within the ePO DXL service) has permission to execute the
-&quot;system find&quot; remote command</li>
+<li>An ePO DXL service is running and available on the fabric. If version 5.0
+or later of the DXL ePO extensions are installed on your ePO server, an
+ePO DXL service should already be running on the fabric. If you are using an
+earlier version of the DXL ePO extensions, you can use the
+<a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>.</li>
+<li>The client is authorized to invoke the ePO DXL Service, and the user that is
+connecting to the ePO server (within the ePO DXL service) has permission to
+execute the &quot;system find&quot; remote command (see <a class="reference internal" href="authorization.html"><span class="doc">Authorization</span></a>).</li>
 </ul>
 </div>
 <div class="section" id="setup">
@@ -125,15 +129,13 @@ automatically determine the ePO's unique identifier).</p>
     <span class="n">epo_client</span> <span class="o">=</span> <span class="n">EpoClient</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">EPO_UNIQUE_ID</span><span class="p">)</span>
 
     <span class="c1"># Run the system find command</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">epo_client</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;system.find&quot;</span><span class="p">,</span>
-                                 <span class="p">{</span><span class="s2">&quot;searchText&quot;</span><span class="p">:</span> <span class="n">SEARCH_TEXT</span><span class="p">},</span>
-                                 <span class="n">output_format</span><span class="o">=</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">JSON</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">epo_client</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;system.find&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;searchText&quot;</span><span class="p">:</span> <span class="n">SEARCH_TEXT</span><span class="p">})</span>
 
-    <span class="c1"># Load find result into dictionary</span>
-    <span class="n">res_dict</span> <span class="o">=</span> <span class="n">MessageUtils</span><span class="o">.</span><span class="n">json_to_dict</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="c1"># Load find result into list</span>
+    <span class="n">res_list</span> <span class="o">=</span> <span class="n">MessageUtils</span><span class="o">.</span><span class="n">json_to_dict</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
     <span class="c1"># Display the results</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">MessageUtils</span><span class="o">.</span><span class="n">dict_to_json</span><span class="p">(</span><span class="n">res_dict</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">MessageUtils</span><span class="o">.</span><span class="n">dict_to_json</span><span class="p">(</span><span class="n">res_list</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -142,9 +144,9 @@ which will be used to invoke remote commands on the ePO server. The <cite>unique
 to invoke remote commands on is specified as an argument to the client constructor. In this particular case, a
 value of <code class="docutils literal notranslate"><span class="pre">None</span></code> is specified which triggers the client to automatically determine the ePO server's unique identifier.
 This will not work if multiple ePO servers are connected to the fabric (an exception will be raised).</p>
-<p>Next, the <a class="reference internal" href="dxlepoclient.client.html#dxlepoclient.client.EpoClient.run_command" title="dxlepoclient.client.EpoClient.run_command"><code class="xref py py-func docutils literal notranslate"><span class="pre">dxlepoclient.client.EpoClient.run_command()</span></code></a> method is invoked with an output
-format of <code class="docutils literal notranslate"><span class="pre">json</span></code> and a <code class="docutils literal notranslate"><span class="pre">searchText</span></code> parameter that is specified with the value of <code class="docutils literal notranslate"><span class="pre">broker</span></code>.</p>
-<p>Finally, the JSON response text is loaded into a Python dictionary (<code class="docutils literal notranslate"><span class="pre">dict</span></code>), formatted,
+<p>Next, the <a class="reference internal" href="dxlepoclient.client.html#dxlepoclient.client.EpoClient.run_command" title="dxlepoclient.client.EpoClient.run_command"><code class="xref py py-func docutils literal notranslate"><span class="pre">dxlepoclient.client.EpoClient.run_command()</span></code></a> method is invoked
+with a <code class="docutils literal notranslate"><span class="pre">searchText</span></code> parameter that is specified with the value of <code class="docutils literal notranslate"><span class="pre">broker</span></code>.</p>
+<p>Finally, the JSON response text is loaded into a Python <code class="docutils literal notranslate"><span class="pre">list</span></code>, formatted,
 and displayed to the screen.</p>
 </div>
 </div>

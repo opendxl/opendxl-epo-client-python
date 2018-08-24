@@ -1,0 +1,190 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Authorization &#8212; McAfee ePolicy Orchestrator (ePO) DXL Client 0.2.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dxlepoclient package" href="dxlepoclient.html" />
+    <link rel="prev" title="Library Installation" href="installation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dxlepoclient.html" title="dxlepoclient package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Library Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">McAfee ePolicy Orchestrator (ePO) DXL Client 0.2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="authorization">
+<h1>Authorization<a class="headerlink" href="#authorization" title="Permalink to this headline">¶</a></h1>
+<p>A critical aspect of exposing ePO remote commands to the DXL fabric is adding
+an authorization policy that restricts which clients can invoke the service.
+This section walks through the steps to create an <code class="docutils literal notranslate"><span class="pre">authorization</span></code> for a
+Python-based DXL client to invoke an ePO remote command.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The steps below apply when version 5.0 or later of the DXL ePO extensions
+have been installed on an ePO server. If you are using an older version of
+the DXL ePO extensions, you will need to use a standalone
+<a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>
+to proxy remote commands to an ePO server. For command authorization
+using the <code class="docutils literal notranslate"><span class="pre">ePO</span> <span class="pre">DXL</span> <span class="pre">Python</span> <span class="pre">Service</span></code> see the following document:</p>
+<p class="last"><a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization">https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization</a></p>
+</div>
+<p>Python-based DXL clients are identified by their certificates. Client-specific
+certificates and/or Certificate Authorities (CAs) can be used to limit which
+clients can invoke ePO remote commands. A client certificate can be used to
+establish a restriction for a single client whereas a certificate authority can
+be used to establish a restriction for all clients that were signed by that
+particular authority.</p>
+<p>If you have not imported a Certificate Authority (CA) or certificate for your
+OpenDXL Python client into ePO, please follow the steps outlined in the
+<a class="reference external" href="https://opendxl.github.io/opendxl-client-python/pydoc/epocaimport.html">ePO Certificate Authority (CA) Import</a>
+section in the OpenDXL Python Client SDK documentation.</p>
+<p>The following section walks through the steps to create an <code class="docutils literal notranslate"><span class="pre">authorization</span></code>
+for an ePO remote command.</p>
+<ol class="arabic">
+<li><p class="first">Navigate to <strong>Server Settings</strong> and select the <strong>DXL Commands</strong> setting
+on the left navigation bar.</p>
+<img alt="_images/commandauth1.png" src="_images/commandauth1.png" />
+</li>
+<li><p class="first">Click the <strong>Edit</strong> button in the lower right corner (as shown in the image
+above).</p>
+<img alt="_images/commandauth2.png" src="_images/commandauth2.png" />
+</li>
+<li><p class="first">In the command tree in the left column, select an individual or group of
+remote command(s) for which the authorization should be created.</p>
+<p>If a certificate is granted authorization at a group level, the certificate
+can be used to run each of the commands with the group's subtree. In the
+example below, the top-level <code class="docutils literal notranslate"><span class="pre">ePO</span></code> group is selected. This enables the
+certificate to be used for running all remote commands.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is recommended to create authorizations for the minimal set of
+remote commands which need to be accessible to the DXL fabric.</p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Click the <strong>Actions</strong> button in the lower left corner (as shown in the image
+above).</p>
+<img alt="_images/commandauth3.png" src="_images/commandauth3.png" />
+</li>
+<li><p class="first">In the <strong>Actions</strong> drop-down list, select the <strong>Create Authorization</strong>
+option.</p>
+<img alt="_images/commandauth4.png" src="_images/commandauth4.png" />
+</li>
+<li><p class="first">Select the <strong>User</strong> that the command(s) should be run as on the ePO server
+and select the checkboxes in the <strong>Restrict to ...</strong> sections for the
+desired entities which should be authorized to run the command(s).</p>
+<p>To authorize the DXL Python client to run the remote command, select the
+check box for the corresponding Certificate Authority or client certificate.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is recommended to create authorizations for the least privileged
+user account and the minimal set of client certificates needed to
+perform the selected remote command(s).</p>
+</div>
+</div></blockquote>
+<img alt="_images/commandauth5.png" src="_images/commandauth5.png" />
+</li>
+<li><p class="first">Click the <strong>OK</strong> button in the lower right corner (as shown in the image
+above).</p>
+<img alt="_images/commandauth6.png" src="_images/commandauth6.png" />
+</li>
+<li><p class="first">Click the <strong>Save</strong> button in the lower right corner (as shown in the image
+above).</p>
+<img alt="_images/commandauth7.png" src="_images/commandauth7.png" />
+</li>
+</ol>
+<p>The remote command(s) should now be able to be performed with the authorized
+certificates.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Library Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dxlepoclient.html"
+                        title="next chapter">dxlepoclient package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/authorization.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dxlepoclient.html" title="dxlepoclient package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Library Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">McAfee ePolicy Orchestrator (ePO) DXL Client 0.2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, McAfee Inc.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

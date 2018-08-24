@@ -75,12 +75,16 @@ exposed to the fabric.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>dxl_client</strong> -- The DXL client to use for communication with the ePO
 DXL service</li>
 <li><strong>epo_unique_id</strong> -- (optional) The unique identifier used to specify
 the ePO server that this client will communicate with.</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>Exception</strong> -- If a value is provided for <cite>epo_unique_id</cite> but
+no matching service is registered with the DXL fabric.</p>
 </td>
 </tr>
 </tbody>
@@ -118,14 +122,14 @@ communicating with.</p>
 <p><strong>Example Usage</strong></p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the help</span>
-<span class="k">print</span> <span class="n">epo_client</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">epo_client</span><span class="o">.</span><span class="n">help</span><span class="p">())</span>
 </pre></div>
 </div>
 </div></blockquote>
 <p><strong>Example Response</strong></p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createAgentDeploymentUrlCmd</span> <span class="n">deployPath</span> <span class="n">groupId</span> <span class="p">[</span><span class="n">edit</span><span class="p">]</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span>
-<span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="p">[</span><span class="n">urlName</span><span class="p">]</span> <span class="p">[</span><span class="n">agentVersionNumber</span><span class="p">]</span> <span class="p">[</span><span class="n">agentHotFix</span><span class="p">]</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">Agent</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createAgentDeploymentUrlCmd</span> <span class="n">deployPath</span> <span class="n">groupId</span> <span class="n">urlName</span>
+<span class="n">agentVersionNumber</span> <span class="n">agentHotFix</span> <span class="p">[</span><span class="n">edit</span><span class="p">]</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span> <span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">Agent</span>
 <span class="n">Deployment</span> <span class="n">URL</span> <span class="n">Command</span>
 <span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createCustomInstallPackageCmd</span> <span class="n">deployPath</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span> <span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="o">-</span>
 <span class="n">Create</span> <span class="n">Custom</span> <span class="n">Install</span> <span class="n">Package</span> <span class="n">Command</span>
@@ -144,10 +148,19 @@ communicating with.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>output_format</strong> -- (optional) The output format for ePO to use when
-returning the response. The list of <cite>output formats</cite> can be found in
-the <a class="reference internal" href="#dxlepoclient.client.OutputFormat" title="dxlepoclient.client.OutputFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code></a> constants class.</td>
+returning the response. The list of <cite>output formats</cite> can be found
+in the <a class="reference internal" href="#dxlepoclient.client.OutputFormat" title="dxlepoclient.client.OutputFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code></a> constants class. If the command is
+processed by the ePO-hosted <cite>DXL Commands</cite> service, this parameter
+can only be set to <a class="reference internal" href="#dxlepoclient.client.OutputFormat.VERBOSE" title="dxlepoclient.client.OutputFormat.VERBOSE"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.VERBOSE</span></code></a> or
+<a class="reference internal" href="#dxlepoclient.client.OutputFormat.JSON" title="dxlepoclient.client.OutputFormat.JSON"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.JSON</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The result of the remote command execution</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>Exception</strong> -- If an unsupported <cite>output format</cite> is specified. This
+exception is raised if the command is to be sent to an ePO-hosted
+<cite>DXL Commands</cite> service and an <cite>output format</cite> of anything other
+than <a class="reference internal" href="#dxlepoclient.client.OutputFormat.VERBOSE" title="dxlepoclient.client.OutputFormat.VERBOSE"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.VERBOSE</span></code></a> or <a class="reference internal" href="#dxlepoclient.client.OutputFormat.JSON" title="dxlepoclient.client.OutputFormat.JSON"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.JSON</span></code></a>
+is specified.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The result of the remote command execution</td>
 </tr>
 </tbody>
 </table>
@@ -184,8 +197,7 @@ exposed to the DXL fabric.</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the system find command</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">epo_client</span><span class="o">.</span><span class="n">run_command</span><span class="p">(</span><span class="s2">&quot;system.find&quot;</span><span class="p">,</span>
-                                <span class="p">{</span><span class="s2">&quot;searchText&quot;</span><span class="p">:</span> <span class="s2">&quot;mySystem&quot;</span><span class="p">},</span>
-                                <span class="n">output_format</span><span class="o">=</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">JSON</span><span class="p">)</span>
+                                <span class="p">{</span><span class="s2">&quot;searchText&quot;</span><span class="p">:</span> <span class="s2">&quot;mySystem&quot;</span><span class="p">})</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -217,12 +229,26 @@ exposed to the DXL fabric.</p>
 <li><strong>params</strong> -- (optional) A dictionary (<code class="docutils literal notranslate"><span class="pre">dict</span></code>) containing the
 parameters for the command</li>
 <li><strong>output_format</strong> -- (optional) The output format for ePO to use when
-returning the response. The list of <cite>output formats</cite> can be found in
-the <a class="reference internal" href="#dxlepoclient.client.OutputFormat" title="dxlepoclient.client.OutputFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code></a> constants class.</li>
+returning the response. The list of <cite>output formats</cite> can be found
+in the <a class="reference internal" href="#dxlepoclient.client.OutputFormat" title="dxlepoclient.client.OutputFormat"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputFormat</span></code></a> constants class. This parameter can
+only be set to a value other than <a class="reference internal" href="#dxlepoclient.client.OutputFormat.JSON" title="dxlepoclient.client.OutputFormat.JSON"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.JSON</span></code></a>
+when the command is processed by a
+<a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">McAfee ePO DXL Python Service</a>
+service. If the command is processed by the ePO-hosted
+<cite>DXL commands</cite> service, this parameter can only be set to
+<a class="reference internal" href="#dxlepoclient.client.OutputFormat.JSON" title="dxlepoclient.client.OutputFormat.JSON"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.JSON</span></code></a>. For compatibility across ePO service
+configurations, it is suggested to not set this parameter (using
+the default value of <a class="reference internal" href="#dxlepoclient.client.OutputFormat.JSON" title="dxlepoclient.client.OutputFormat.JSON"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.JSON</span></code></a>).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The result of the remote command execution</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>Exception</strong> -- If an unsupported <cite>output format</cite> is specified. This
+exception is raised if the command is to be sent to an ePO-hosted
+<cite>DXL Commands</cite> service and an <cite>output format</cite> of anything other
+than <a class="reference internal" href="#dxlepoclient.client.OutputFormat.JSON" title="dxlepoclient.client.OutputFormat.JSON"><code class="xref py py-const docutils literal notranslate"><span class="pre">OutputFormat.JSON</span></code></a> is specified.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The result of the remote command execution</p>
 </td>
 </tr>
 </tbody>

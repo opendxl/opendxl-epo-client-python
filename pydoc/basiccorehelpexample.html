@@ -50,8 +50,14 @@ The &quot;core help&quot; command lists the remote commands that are exposed by 
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>The samples configuration step has been completed (see <a class="reference internal" href="sampleconfig.html"><span class="doc">Samples Configuration</span></a>)</li>
-<li>The ePO DXL service is running and available on the fabric (see <a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>)</li>
-<li>The client is authorized to invoke the ePO DXL Service (see <a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization">ePO DXL Service Client Authorization</a>)</li>
+<li>An ePO DXL service is running and available on the fabric. If version 5.0
+or later of the DXL ePO extensions are installed on your ePO server, an
+ePO DXL service should already be running on the fabric. If you are using an
+earlier version of the DXL ePO extensions, you can use the
+<a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>.</li>
+<li>The client is authorized to invoke the ePO DXL Service, and the user that is
+connecting to the ePO server (within the ePO DXL service) has permission to
+execute the &quot;core help&quot; remote command (see <a class="reference internal" href="authorization.html"><span class="doc">Authorization</span></a>).</li>
 </ul>
 </div>
 <div class="section" id="setup">
@@ -82,8 +88,8 @@ automatically determine the ePO's unique identifier).</p>
 </div></blockquote>
 <p>The output should appear similar to the following:</p>
 <blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createAgentDeploymentUrlCmd</span> <span class="n">deployPath</span> <span class="n">groupId</span> <span class="p">[</span><span class="n">edit</span><span class="p">]</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span>
-<span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="p">[</span><span class="n">urlName</span><span class="p">]</span> <span class="p">[</span><span class="n">agentVersionNumber</span><span class="p">]</span> <span class="p">[</span><span class="n">agentHotFix</span><span class="p">]</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">Agent</span>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createAgentDeploymentUrlCmd</span> <span class="n">deployPath</span> <span class="n">groupId</span> <span class="n">urlName</span>
+<span class="n">agentVersionNumber</span> <span class="n">agentHotFix</span> <span class="p">[</span><span class="n">edit</span><span class="p">]</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span> <span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">Agent</span>
 <span class="n">Deployment</span> <span class="n">URL</span> <span class="n">Command</span>
 <span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createCustomInstallPackageCmd</span> <span class="n">deployPath</span> <span class="p">[</span><span class="n">ahId</span><span class="p">]</span> <span class="p">[</span><span class="n">fallBackAhId</span><span class="p">]</span> <span class="o">-</span>
 <span class="n">Create</span> <span class="n">Custom</span> <span class="n">Install</span> <span class="n">Package</span> <span class="n">Command</span>
@@ -92,11 +98,6 @@ automatically determine the ePO's unique identifier).</p>
 <span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">createTagGroup</span> <span class="n">parentTagGroupId</span> <span class="n">newTagGroupName</span> <span class="o">-</span> <span class="n">Create</span> <span class="n">a</span> <span class="n">new</span>
 <span class="n">subgroup</span> <span class="n">under</span> <span class="n">an</span> <span class="n">existing</span> <span class="n">tag</span> <span class="n">group</span><span class="o">.</span>
 <span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">deleteTag</span> <span class="n">tagIds</span> <span class="p">[</span><span class="n">forceDelete</span><span class="p">]</span> <span class="o">-</span> <span class="n">Delete</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">tags</span><span class="o">.</span>
-<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">deleteTagGroup</span> <span class="n">tagGroupIds</span> <span class="p">[</span><span class="n">deleteTags</span><span class="p">]</span> <span class="o">-</span> <span class="n">Delete</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">more</span> <span class="n">Tag</span>
-<span class="n">Groups</span><span class="o">.</span>
-<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">listAllTagGroups</span> <span class="o">-</span> <span class="n">List</span> <span class="n">All</span> <span class="n">Tag</span> <span class="n">Groups</span> <span class="ow">in</span> <span class="n">Tag</span> <span class="n">Group</span> <span class="n">Tree</span>
-<span class="n">ComputerMgmt</span><span class="o">.</span><span class="n">moveTagsToTagGroup</span> <span class="n">tagIds</span> <span class="n">tagGroupId</span> <span class="o">-</span> <span class="n">Move</span> <span class="n">tags</span> <span class="n">to</span> <span class="n">an</span> <span class="n">existing</span> <span class="n">tag</span>
-<span class="n">group</span><span class="o">.</span>
 
 <span class="o">...</span>
 </pre></div>

@@ -15,7 +15,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="dxlepoclient package" href="dxlepoclient.html" />
+    <link rel="next" title="Authorization" href="authorization.html" />
     <link rel="prev" title="Overview" href="overview.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -28,7 +28,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="dxlepoclient.html" title="dxlepoclient package"
+          <a href="authorization.html" title="Authorization"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="overview.html" title="Overview"
@@ -57,16 +57,42 @@
 <dd><a class="reference external" href="https://opendxl.github.io/opendxl-client-python/pydoc/installation.html">https://opendxl.github.io/opendxl-client-python/pydoc/installation.html</a></dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>McAfee ePolicy Orchestrator (ePO) service is running and available on DXL fabric</dt>
-<dd><a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">https://github.com/opendxl/opendxl-epo-service-python</a> (Python-based service implementation)</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>OpenDXL Python Client has permission to invoke ePO remote commands</dt>
-<dd><a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization">https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization</a></dd>
-</dl>
-</li>
+<li>McAfee ePolicy Orchestrator (ePO) service is running and available on DXL
+fabric</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>If version 5.0 or later of the DXL ePO extensions are installed on your ePO
+server, an ePO DXL service should already be running on the fabric.</li>
+</ul>
+</div></blockquote>
+<blockquote>
+<div><ul class="simple">
+<li>If you are using an earlier version of the DXL ePO extensions, you can use the
+<a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">McAfee ePolicy Orchestrator (ePO) DXL Python Service</a>.</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li>OpenDXL Python Client has permission to invoke ePO remote commands</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>If version 5.0 or later of DXL ePO extensions are installed on your ePO
+server, see the <a class="reference internal" href="authorization.html"><span class="doc">Authorization</span></a> page to ensure that the OpenDXL Python
+client has appropriate authorization to perform ePO remote commands.</li>
+</ul>
+</div></blockquote>
+<blockquote>
+<div><ul class="simple">
+<li>If you are using the standalone
+<a class="reference external" href="https://github.com/opendxl/opendxl-epo-service-python">ePO DXL Python Service</a>
+to proxy remote commands to the ePO server, follow the steps on the
+<a class="reference external" href="https://opendxl.github.io/opendxl-epo-service-python/pydoc/authorization.html#client-authorization">ePO DXL Python Service Authorization</a>
+page to ensure that the OpenDXL Python client has appropriate authorization
+to perform ePO remote commands.</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
 <li>Python 2.7.9 or higher in the Python 2.x series or Python 3.4.0 or higher
 in the Python 3.x series installed within a Windows or Linux environment.</li>
 </ul>
@@ -114,8 +140,8 @@ script:</p>
   <p class="topless"><a href="overview.html"
                         title="previous chapter">Overview</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="dxlepoclient.html"
-                        title="next chapter">dxlepoclient package</a></p>
+  <p class="topless"><a href="authorization.html"
+                        title="next chapter">Authorization</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -149,7 +175,7 @@ script:</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="dxlepoclient.html" title="dxlepoclient package"
+          <a href="authorization.html" title="Authorization"
              >next</a> |</li>
         <li class="right" >
           <a href="overview.html" title="Overview"
