@@ -5,9 +5,20 @@ from dxlclient.callbacks import RequestCallback
 from dxlclient.message import Response, ErrorResponse
 from tests.test_value_constants import *
 
+
 class FakeEpoServerCallback(RequestCallback):
-    # The format for request topics that are associated with the ePO DXL service
-    EPO_REQUEST_TOPIC = "/mcafee/service/epo/remote/" + LOCAL_TEST_SERVER_NAME
+    # The format for request topics that are associated with the ePO DXL
+    # "remote" service. "remote" services are registered by the standalone ePO
+    # DXL Python service
+    # (https://github.com/opendxl/opendxl-epo-service-python).
+    EPO_REMOTE_REQUEST_TOPIC = "/mcafee/service/epo/remote/" + \
+                               LOCAL_TEST_SERVER_NAME + "{}"
+
+    # The format for request topics that are associated with the ePO DXL
+    # "commands" service. "commands" services are registered by version 5.0 and
+    # later of the DXL Broker Management extension in ePO.
+    EPO_COMMAND_REQUEST_TOPIC = "/mcafee/service/epo/command/" + \
+        LOCAL_TEST_SERVER_NAME + "{}/remote/#"
 
     TEST_SYSTEM_NAME = "sys1"
 
@@ -32,7 +43,7 @@ class FakeEpoServerCallback(RequestCallback):
                 "command",
                 "prefix=<>"
             ],
-            "description": "Displays a list of all commands and help \nstrings."
+            "description": "Displays a list of all commands and help \r\nstrings."
         },
         {
             "name": "system.find",
@@ -46,31 +57,44 @@ class FakeEpoServerCallback(RequestCallback):
 
     @property
     def epo_request_topic(self):
-        return self.EPO_REQUEST_TOPIC + self.id_number
+        request_topic = self.EPO_COMMAND_REQUEST_TOPIC \
+            if self.use_commands_service else self.EPO_REMOTE_REQUEST_TOPIC
+        return request_topic.format(self.id_number)
 
-    def __init__(self, client, id_number):
-        """
-        Constructor parameters:
-
-        :param app: The application this handler is associated with
-        """
+    def __init__(self, client, id_number, use_commands_service,
+                 user_authorized):
         super(FakeEpoServerCallback, self).__init__()
 
         self._client = client
         self.id_number = str(id_number)
-
+        self.use_commands_service = use_commands_service
+        self.user_authorized = user_authorized
 
     def on_request(self, request):
         try:
+            if not self.user_authorized:
+                return
+
             # Build dictionary from the request payload
             req_dict = json.loads(request.payload.decode(encoding=self.UTF_8))
 
-            # Determine the ePO command
-            if self.CMD_NAME_KEY not in req_dict:
-                raise Exception(
-                    "A command name was not specified ('{0}')".format(
-                        self.CMD_NAME_KEY))
-            command = req_dict[self.CMD_NAME_KEY]
+            if self.use_commands_service:
+                # Determine the ePO command
+                command = request.destination_topic[
+                    len(self.epo_request_topic)-1:].replace("/", ".")
+
+                # Determine the command parameters
+                params = req_dict
+            else:
+                # Determine the ePO command
+                if self.CMD_NAME_KEY not in req_dict:
+                    raise Exception(
+                        "A command name was not specified ('{0}')".format(
+                            self.CMD_NAME_KEY))
+                command = req_dict[self.CMD_NAME_KEY]
+
+                # Determine the command parameters
+                params = req_dict[self.PARAMS_KEY]
 
             # Help command received
             if command == CORE_HELP_CMD_NAME:
@@ -78,7 +102,7 @@ class FakeEpoServerCallback(RequestCallback):
 
             # System Find command
             elif command == SYSTEM_FIND_CMD_NAME:
-                self.system_find_command(request)
+                self.system_find_command(request, params)
 
             # Unknown Command
             else:
@@ -91,13 +115,11 @@ class FakeEpoServerCallback(RequestCallback):
                               error_message=str(ex).encode(
                                   encoding=self.UTF_8)))
 
-
     def help_command(self, request):
         # Create the response
         response = Response(request)
 
-        response.payload = ""
-
+        cmd_array = []
         for cmd in self.KNOWN_COMMANDS:
 
             cmd_string = cmd["name"] + " "
@@ -107,19 +129,22 @@ class FakeEpoServerCallback(RequestCallback):
 
             cmd_string += "- " + cmd["description"]
 
-            response.payload += cmd_string
+            cmd_array.append(cmd_string)
+
+        response.payload = MessageUtils.dict_to_json(cmd_array)
 
         self._client.send_response(response)
 
-
-    def system_find_command(self, request):
+    def system_find_command(self, request, params):
         # Create the response
         response = Response(request)
 
-        response.payload = MessageUtils.dict_to_json(SYSTEM_FIND_PAYLOAD)
+        response.payload = MessageUtils.dict_to_json(
+            SYSTEM_FIND_PAYLOAD
+            if params == {"searchText": SYSTEM_FIND_OSTYPE_LINUX}
+            else [])
 
         self._client.send_response(response)
-
 
     def unknown_command(self, request, command):
         # Create the response

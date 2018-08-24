@@ -22,7 +22,7 @@ import sys
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.client import DxlClient
 from dxlbootstrap.util import MessageUtils
-from dxlepoclient import EpoClient, OutputFormat
+from dxlepoclient import EpoClient
 
 # Import common logging and configuration
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -51,12 +51,10 @@ with DxlClient(config) as client:
     epo_client = EpoClient(client, EPO_UNIQUE_ID)
 
     # Run the system find command
-    res = epo_client.run_command("system.find",
-                                 {"searchText": SEARCH_TEXT},
-                                 output_format=OutputFormat.JSON)
+    res = epo_client.run_command("system.find", {"searchText": SEARCH_TEXT})
 
-    # Load find result into dictionary
-    res_dict = MessageUtils.json_to_dict(res)
+    # Load find result into list
+    res_list = MessageUtils.json_to_dict(res)
 
     # Display the results
-    print(MessageUtils.dict_to_json(res_dict, pretty_print=True))
+    print(MessageUtils.dict_to_json(res_list, pretty_print=True))

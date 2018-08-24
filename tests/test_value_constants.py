@@ -1,3 +1,5 @@
+import os
+
 LOCAL_TEST_SERVER_NAME = "local_test"
 DEFAULT_EPO_SERVER_ID = 0
 
@@ -5,11 +7,10 @@ ERROR_RESPONSE_PAYLOAD_PREFIX = "Error 1 : \nNo such command: "
 
 CORE_HELP_CMD_NAME = "core.help"
 
-HELP_CMD_RESPONSE_PAYLOAD = (
-    "core.help [command] [prefix=<>] - Displays a list of all commands and help \n"
-    "strings."
+HELP_CMD_RESPONSE_PAYLOAD = os.linesep.join([
+    "core.help [command] [prefix=<>] - Displays a list of all commands and help \r\nstrings.",
     "system.find [searchText] [searchNameOnly] - Finds systems in the System Tree"
-)
+])
 
 SYSTEM_FIND_CMD_NAME = "system.find"
 

@@ -96,7 +96,11 @@ class BaseClientTest(TestCase):
             re.sub(
                 r"[{[\]}]",
                 ".*",
-                json_string
+                re.sub(
+                    r"\\",
+                    r"\\\\",
+                    json_string
+                )
             )
         )
 
