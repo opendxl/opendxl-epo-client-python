@@ -64,8 +64,12 @@ clients can invoke ePO remote commands. A client certificate can be used to
 establish a restriction for a single client whereas a certificate authority can
 be used to establish a restriction for all clients that were signed by that
 particular authority.</p>
-<p>If you have not imported a Certificate Authority (CA) or certificate for your
-OpenDXL Python client into ePO, please follow the steps outlined in the
+<p>If you are using the
+<a class="reference external" href="https://opendxl.github.io/opendxl-client-python/pydoc/epoexternalcertissuance.html">External Certificate Authority (CA) Provisioning</a>
+approach to manage your DXL client certificates, you will need to manually
+import your client certificate into ePO in order to be able to create an ePO
+remote command <code class="docutils literal notranslate"><span class="pre">authorization</span></code> for the certificate. For more information on
+importing client certificates into ePO, see the
 <a class="reference external" href="https://opendxl.github.io/opendxl-client-python/pydoc/epocaimport.html">ePO Certificate Authority (CA) Import</a>
 section in the OpenDXL Python Client SDK documentation.</p>
 <p>The following section walks through the steps to create an <code class="docutils literal notranslate"><span class="pre">authorization</span></code>
