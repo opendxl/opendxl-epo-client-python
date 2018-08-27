@@ -24,8 +24,12 @@ establish a restriction for a single client whereas a certificate authority can
 be used to establish a restriction for all clients that were signed by that
 particular authority.
 
-If you have not imported a Certificate Authority (CA) or certificate for your
-OpenDXL Python client into ePO, please follow the steps outlined in the
+If you are using the
+`External Certificate Authority (CA) Provisioning <https://opendxl.github.io/opendxl-client-python/pydoc/epoexternalcertissuance.html>`_
+approach to manage your DXL client certificates, you will need to manually
+import your client certificate into ePO in order to be able to create an ePO
+remote command ``authorization`` for the certificate. For more information on
+importing client certificates into ePO, see the
 `ePO Certificate Authority (CA) Import <https://opendxl.github.io/opendxl-client-python/pydoc/epocaimport.html>`_
 section in the OpenDXL Python Client SDK documentation.
 
