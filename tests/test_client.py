@@ -94,6 +94,33 @@ class TestClient(BaseClientTest):
                         EpoClient,
                         dxl_client)
 
+    def test_init_no_unique_id_remote_preferred_to_commands_service(self):
+        with self.create_client(max_retries=0) as dxl_client:
+            dxl_client.connect()
+
+            with MockEpoServer(dxl_client, id_number=0,
+                               use_commands_service=True), \
+                    MockEpoServer(dxl_client, id_number=1,
+                                  use_commands_service=False):
+                epo_client = EpoClient(dxl_client)
+                self.assertEqual(epo_client._epo_unique_id,
+                                 LOCAL_TEST_SERVER_NAME + "1")
+                self.assertIn("core.help", epo_client.help())
+
+    def test_init_same_unique_id_remote_preferred_to_commands_service(self):
+        with self.create_client(max_retries=0) as dxl_client:
+            dxl_client.connect()
+
+            with MockEpoServer(dxl_client, use_commands_service=True,
+                               user_authorized=False), \
+                     MockEpoServer(dxl_client,
+                                   use_commands_service=False):
+                epo_client = EpoClient(dxl_client)
+                self.assertEqual(epo_client._epo_unique_id,
+                                 LOCAL_TEST_SERVER_NAME +
+                                 str(DEFAULT_EPO_SERVER_ID))
+                self.assertIn("core.help", epo_client.help())
+
     def test_lookup_epo_unique_identifiers(self):
         with self.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
