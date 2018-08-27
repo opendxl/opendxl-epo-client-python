@@ -488,14 +488,15 @@ class EpoClient(Client):
         :raise Exception: If no service matching the unique id is registered
             with the DXL fabric.
         """
-        id_for_commands_service = True
+        id_for_commands_service = False
         if epo_unique_id not in \
-            EpoClient._lookup_epo_commands_service_unique_ids(dxl_client,
-                                                              response_timeout):
-            id_for_commands_service = False
-            if epo_unique_id not in \
-                    EpoClient._lookup_epo_remote_service_unique_ids(dxl_client,
-                                                                    response_timeout):
+            EpoClient._lookup_epo_remote_service_unique_ids(dxl_client,
+                                                            response_timeout):
+            if epo_unique_id in \
+                    EpoClient._lookup_epo_commands_service_unique_ids(
+                            dxl_client, response_timeout):
+                id_for_commands_service = True
+            else:
                 raise Exception("No ePO DXL services are registered with " +
                                 "the DXL fabric for id: " + epo_unique_id)
         return id_for_commands_service
@@ -518,15 +519,15 @@ class EpoClient(Client):
             containing the unique identifiers for the ePO servers that are
             currently exposed to the DXL fabric.
         """
-        ids_for_epo_commands_service = True
-        ret_ids = EpoClient._lookup_epo_commands_service_unique_ids(
+        ids_for_epo_commands_service = False
+        ret_ids = EpoClient._lookup_epo_remote_service_unique_ids(
             dxl_client, response_timeout
         )
         if not ret_ids:
-            ret_ids = EpoClient._lookup_epo_remote_service_unique_ids(
+            ret_ids = EpoClient._lookup_epo_commands_service_unique_ids(
                 dxl_client, response_timeout
             )
-            ids_for_epo_commands_service = False
+            ids_for_epo_commands_service = True
         return ids_for_epo_commands_service, ret_ids
 
     @staticmethod
