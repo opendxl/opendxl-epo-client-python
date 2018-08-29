@@ -490,8 +490,8 @@ class EpoClient(Client):
         """
         id_for_commands_service = False
         if epo_unique_id not in \
-            EpoClient._lookup_epo_remote_service_unique_ids(dxl_client,
-                                                            response_timeout):
+                EpoClient._lookup_epo_remote_service_unique_ids(
+                        dxl_client, response_timeout):
             if epo_unique_id in \
                     EpoClient._lookup_epo_commands_service_unique_ids(
                             dxl_client, response_timeout):
@@ -514,21 +514,20 @@ class EpoClient(Client):
         :param response_timeout: (optional) The maximum amount of time to wait
             for a response
         :return: A ``tuple`` where the first item is a ``bool`` representing
-            whether the returned ids are for "commands" services (``True``) or
-            "remote" services (``False``) and the second item is a ``set``
-            containing the unique identifiers for the ePO servers that are
-            currently exposed to the DXL fabric.
+            whether a "commands" service (``True``) or "remote" service
+            (``False``) should be used. If at least one "remote" service is
+            available, a "remote" service should be used. The second item in
+            the ``tuple`` is a ``set`` containing the unique identifiers for
+            the ePO servers that are currently exposed to the DXL fabric.
         """
-        ids_for_epo_commands_service = False
-        ret_ids = EpoClient._lookup_epo_remote_service_unique_ids(
-            dxl_client, response_timeout
-        )
-        if not ret_ids:
-            ret_ids = EpoClient._lookup_epo_commands_service_unique_ids(
-                dxl_client, response_timeout
-            )
-            ids_for_epo_commands_service = True
-        return ids_for_epo_commands_service, ret_ids
+        epo_remote_service_ids = \
+            EpoClient._lookup_epo_remote_service_unique_ids(dxl_client,
+                                                            response_timeout)
+        epo_command_service_ids = \
+            EpoClient._lookup_epo_commands_service_unique_ids(dxl_client,
+                                                              response_timeout)
+        return not epo_remote_service_ids, \
+            epo_command_service_ids.union(epo_remote_service_ids)
 
     @staticmethod
     def lookup_epo_unique_identifiers(
