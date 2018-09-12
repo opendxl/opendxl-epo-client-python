@@ -4,3 +4,6 @@ dist/
 build/
 dxlepoclient.egg-info/
 tests/dxlclient.config
+*.csr
+*.key
+*.crt
