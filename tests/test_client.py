@@ -94,7 +94,7 @@ class TestClient(BaseClientTest):
                         EpoClient,
                         dxl_client)
 
-    def test_init_no_unique_id_remote_preferred_to_commands_service(self):
+    def test_init_no_unique_id_with_both_remote_and_command_services(self):
         with self.create_client(max_retries=0) as dxl_client:
             dxl_client.connect()
 
@@ -102,10 +102,13 @@ class TestClient(BaseClientTest):
                                use_commands_service=True), \
                     MockEpoServer(dxl_client, id_number=1,
                                   use_commands_service=False):
-                epo_client = EpoClient(dxl_client)
-                self.assertEqual(epo_client._epo_unique_id,
-                                 LOCAL_TEST_SERVER_NAME + "1")
-                self.assertIn("core.help", epo_client.help())
+                self.assertRaisesRegex(
+                    Exception,
+                    "Multiple ePO DXL services are registered.*" +
+                    LOCAL_TEST_SERVER_NAME + '0' + ", " +
+                    LOCAL_TEST_SERVER_NAME + '1',
+                    EpoClient,
+                    dxl_client)
 
     def test_init_same_unique_id_remote_preferred_to_commands_service(self):
         with self.create_client(max_retries=0) as dxl_client:
